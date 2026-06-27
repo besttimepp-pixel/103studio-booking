@@ -799,6 +799,50 @@
 const LIFF_ID = '2010463130-HvB8mhL6';
 
 /* ═══════════════════════════════════════════════
+   SUPABASE CONFIG
+═══════════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://nhkewudaibspjzmpjqzq.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oa2V3dWRhaWJzcGp6bXBqcXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NTk0OTUsImV4cCI6MjA5ODEzNTQ5NX0.22oJM_fmX8u6rcGxpT2TVyCd5o8QObr7e_xTD9wHKow';
+
+// Supabase REST helper
+const sb = {
+  async insert(table, data){
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=representation'},
+      body: JSON.stringify(data)
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async update(table, match, data){
+    const params = Object.entries(match).map(([k,v])=>`${k}=eq.${v}`).join('&');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=representation'},
+      body: JSON.stringify(data)
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async select(table, params=''){
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}&order=created_at.desc`, {
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async uploadSlip(file, bookingRef){
+    // Convert to base64 and store URL via storage bucket
+    return new Promise((resolve)=>{
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result); // base64 data URL
+      reader.readAsDataURL(file);
+    });
+  }
+};
+
+/* ═══════════════════════════════════════════════
    LINE PROFILE (เก็บ session นี้)
 ═══════════════════════════════════════════════ */
 let lineProfile = null;
@@ -888,13 +932,32 @@ const LOCK_NUMBERS = [
   {branch:'ยูเพลินมอลล์ คลองหก', numbers:['23','67','04','88']},
 ];
 
-// Simulated booked slots (branch_id, date, time, staff_id or null)
-const BOOKED = [
-  {branch_id:1, date:'2026-06-27', time:'14:00', staff_id:1},
-  {branch_id:1, date:'2026-06-27', time:'14:00', staff_id:2},
-  {branch_id:1, date:'2026-06-28', time:'11:30', staff_id:3},
-];
-const BLOCKED_DATES = ['2026-06-30','2026-07-01'];
+// ไม่ใช้ Mock BOOKED อีกต่อไป — ดึงจาก Supabase แทน
+const BOOKED = []; // placeholder (ระบบใช้ checkSlotAvailability แทน)
+const BLOCKED_DATES = []; // placeholder (Admin ตั้งค่าผ่านหลังบ้าน)
+
+// ─── ตรวจ slot ว่างจาก Supabase ─────────────────
+async function checkSlotAvailability(branchId, date, time, staffId=null){
+  try {
+    let params = `branch_id=eq.${branchId}&booking_date=eq.${date}&booking_time=eq.${time}&status=neq.CANCELLED&status=neq.EXPIRED&select=staff_id`;
+    const rows = await sb.select('bookings', params);
+    return rows || [];
+  } catch(e){
+    console.warn('checkSlot error:', e);
+    return [];
+  }
+}
+
+// ─── ดึงวันที่ปิดจาก Supabase ─────────────────────
+let _blockedDatesCache = null;
+async function fetchBlockedDates(){
+  if(_blockedDatesCache) return _blockedDatesCache;
+  try {
+    const rows = await sb.select('blocked_dates','select=blocked_date');
+    _blockedDatesCache = rows.map(r=>r.blocked_date);
+    return _blockedDatesCache;
+  } catch(e){ return []; }
+}
 
 /* ═══════════════════════════════════════════════
    BOOKING STATE
@@ -950,22 +1013,21 @@ const TH_MONTHS=['มกราคม','กุมภาพันธ์','มี�
 const TH_MONTHS_SHORT=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DOW=['อา','จ','อ','พ','พฤ','ศ','ส'];
 
-function renderCalendar(){
+async function renderCalendar(){
   document.getElementById('cal-month-label').textContent = TH_MONTHS[calMonth]+' '+(calYear+543);
-  // DOW headers
   const dowEl = document.getElementById('cal-dow');
   dowEl.innerHTML = DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('');
-  // Days
   const today = new Date(); today.setHours(0,0,0,0);
   const firstDay = new Date(calYear,calMonth,1).getDay();
   const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const blockedDates = await fetchBlockedDates();
   let html = '';
   for(let i=0;i<firstDay;i++) html+='<div></div>';
   for(let d=1;d<=daysInMonth;d++){
     const date = new Date(calYear,calMonth,d);
     const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isPast = date < today;
-    const isBlocked = BLOCKED_DATES.includes(dateStr);
+    const isBlocked = blockedDates.includes(dateStr);
     const isToday = date.getTime()===today.getTime();
     const isSelected = booking.date===dateStr;
     let cls = 'cal-day';
@@ -995,6 +1057,17 @@ function goStep3(){
   renderTimeSlots();
   showScreen('screen-time');
 }
+function goStep4(){
+  const [y,m,d]=booking.date.split('-');
+  document.getElementById('staff-info-label').textContent = `${booking.branch.name} · ${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} · ${booking.time} น.`;
+  renderStaffCards();
+  showScreen('screen-staff');
+}
+function selectTime(t){
+  booking.time=t; booking.staff=null;
+  renderTimeSlots();
+  document.getElementById('btn-time-next').disabled=false;
+}
 
 /* ═══════════════════════════════════════════════
    STEP 3: TIME SLOTS
@@ -1002,8 +1075,6 @@ function goStep3(){
 function generateSlots(){
   const slots=[];
   for(let h=11;h<=21;h++){
-    const mArr = h===11?[30]:(h===21?[0,30]:[0,30]);
-    // Actually 11:30..21:30
     for(const m of (h===11?[30]:h===21?[0,30]:[0,30])){
       if(h===21&&m>30) break;
       slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
@@ -1011,70 +1082,56 @@ function generateSlots(){
   }
   return slots;
 }
-function isSlotFull(time){
-  if(!booking.branch) return false;
-  const totalStaff = STAFFS.filter(s=>s.branch_id===booking.branch.id).length;
-  const bookedSpecific = BOOKED.filter(b=>b.branch_id===booking.branch.id&&b.date===booking.date&&b.time===time&&b.staff_id!==null).length;
-  const bookedUnassigned = BOOKED.filter(b=>b.branch_id===booking.branch.id&&b.date===booking.date&&b.time===time&&b.staff_id===null).length;
-  return (bookedSpecific+bookedUnassigned)>=totalStaff;
-}
-function renderTimeSlots(){
+
+async function renderTimeSlots(){
+  document.getElementById('time-slots').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-mid)">⏳ กำลังตรวจสอบ...</div>`;
   const slots = generateSlots();
+  const totalStaff = STAFFS.filter(s=>s.branch_id===booking.branch.id).length;
+  const bookedRows = await checkSlotAvailability(booking.branch.id, booking.date);
+
   document.getElementById('time-slots').innerHTML = slots.map(t=>{
-    const full=isSlotFull(t);
-    const sel=booking.time===t;
+    const bookedAtTime = bookedRows.filter(r=> {
+      const bt = r.booking_time?.slice(0,5);
+      return bt===t;
+    });
+    const full = bookedAtTime.length >= totalStaff;
+    const sel  = booking.time===t;
     return `<div class="time-slot${full?' time-slot--full':sel?' time-slot--selected':''}"
       ${full?'':`onclick="selectTime('${t}')"`}>${full?t+'<br/>เต็ม':t}</div>`;
   }).join('');
 }
-function selectTime(t){
-  booking.time=t; booking.staff=null;
-  renderTimeSlots();
-  document.getElementById('btn-time-next').disabled=false;
-}
-function goStep4(){
-  const bId=booking.branch.id;
-  const [y,m,d]=booking.date.split('-');
-  document.getElementById('staff-info-label').textContent = `${booking.branch.name} · ${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} · ${booking.time} น.`;
-  renderStaffCards();
-  showScreen('screen-staff');
-}
 
-/* ═══════════════════════════════════════════════
-   STEP 4: STAFF
-═══════════════════════════════════════════════ */
-function isStaffBusy(staffId){
-  return BOOKED.some(b=>b.branch_id===booking.branch.id&&b.date===booking.date&&b.time===booking.time&&b.staff_id===staffId);
-}
-function renderStaffCards(){
+async function renderStaffCards(){
+  document.getElementById('staff-cards').innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-mid)">⏳ กำลังตรวจสอบ...</div>`;
   const branchStaffs = STAFFS.filter(s=>s.branch_id===booking.branch.id);
-  // Check if any slot for "unassigned" is available
-  const totalStaff = branchStaffs.length;
-  const bookedSpecific = BOOKED.filter(b=>b.branch_id===booking.branch.id&&b.date===booking.date&&b.time===booking.time&&b.staff_id!==null).length;
-  const bookedUnassigned = BOOKED.filter(b=>b.branch_id===booking.branch.id&&b.date===booking.date&&b.time===booking.time&&b.staff_id===null).length;
-  const canUnassigned = (bookedSpecific+bookedUnassigned)<totalStaff;
+  const bookedRows   = await checkSlotAvailability(booking.branch.id, booking.date, booking.time);
+  const bookedIds    = bookedRows.filter(r=>r.staff_id).map(r=>r.staff_id);
+  const totalStaff   = branchStaffs.length;
+  const canUnassigned= bookedRows.length < totalStaff;
 
-  const allCards = [...branchStaffs.map(s=>{
-    const busy=isStaffBusy(s.id);
-    const sel=booking.staff?.id===s.id;
-    return `<div class="staff-card${sel?' selected':busy?' disabled':''}" ${busy?'':`onclick="selectStaff(${s.id})"`}>
-      <div class="staff-avatar">${s.emoji}</div>
+  const allCards = [
+    ...branchStaffs.map(s=>{
+      const busy = bookedIds.includes(s.id);
+      const sel  = booking.staff?.id===s.id;
+      return `<div class="staff-card${sel?' selected':busy?' disabled':''}" ${busy?'':`onclick="selectStaff(${s.id})"`}>
+        <div class="staff-avatar">${s.emoji}</div>
+        <div class="staff-info">
+          <div class="staff-name">${s.name}</div>
+          <div class="staff-tag">${booking.branch.name}</div>
+        </div>
+        <span class="staff-avail ${busy?'busy':'free'}">${busy?'ไม่ว่าง':'ว่าง'}</span>
+      </div>`;
+    }),
+    `<div class="staff-card${booking.staff?.id===0?' selected':''} ${canUnassigned?'':'disabled'}"
+      ${canUnassigned?'onclick="selectStaff(0)"':''}>
+      <div class="staff-avatar">🎲</div>
       <div class="staff-info">
-        <div class="staff-name">${s.name}</div>
-        <div class="staff-tag">${booking.branch.name}</div>
+        <div class="staff-name">ไม่ระบุช่าง</div>
+        <div class="staff-tag">${canUnassigned?'มีช่างว่าง':'คิวเต็ม'}</div>
       </div>
-      <span class="staff-avail ${busy?'busy':'free'}">${busy?'ไม่ว่าง':'ว่าง'}</span>
-    </div>`;
-  }),
-  `<div class="staff-card${booking.staff?.id===0?' selected':''} ${canUnassigned?'':'disabled'}"
-    ${canUnassigned?'onclick="selectStaff(0)"':''}>
-    <div class="staff-avatar">🎲</div>
-    <div class="staff-info">
-      <div class="staff-name">ไม่ระบุช่าง</div>
-      <div class="staff-tag">${canUnassigned?'มีช่างว่าง':'คิวเต็ม'}</div>
-    </div>
-    <span class="staff-avail ${canUnassigned?'free':'busy'}">${canUnassigned?'ว่าง':'เต็ม'}</span>
-  </div>`];
+      <span class="staff-avail ${canUnassigned?'free':'busy'}">${canUnassigned?'ว่าง':'เต็ม'}</span>
+    </div>`
+  ];
   document.getElementById('staff-cards').innerHTML = allCards.join('');
 }
 function selectStaff(id){
@@ -1429,13 +1486,66 @@ function removeSlip(){
   document.getElementById('file-input').value='';
   document.getElementById('btn-submit-slip').disabled=true;
 }
-function submitSlip(){
-  // Simulate submission
-  showToast('กำลังส่งข้อมูล...');
-  setTimeout(()=>{
-    renderSuccess();
-    showScreen('screen-success');
-  },1200);
+async function submitSlip(){
+  const fileInput = document.getElementById('file-input');
+  const file = fileInput.files[0];
+  if(!file){ showToast('กรุณาเลือกรูปสลิปก่อนครับ'); return; }
+
+  // Disable button + show loading
+  const btn = document.getElementById('btn-submit-slip');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังส่งข้อมูล...';
+  showToast('กำลังบันทึกการจอง...');
+
+  try {
+    const svcNames = booking.services.map(id=>SERVICES.find(s=>s.id===id)?.name).join(', ');
+
+    // 1. บันทึก Booking เข้า Supabase
+    const bookingData = {
+      booking_ref:       booking.ref,
+      branch_id:         booking.branch.id,
+      branch_name:       booking.branch.name + ' ' + booking.branch.sub,
+      staff_id:          booking.staff?.id || null,
+      staff_name:        booking.staff?.name || 'ไม่ระบุช่าง',
+      booking_date:      booking.date,
+      booking_time:      booking.time,
+      customer_name:     booking.name,
+      customer_phone:    booking.phone,
+      customer_line_id:  booking.lineId || '',
+      customer_line_uid: booking.lineUserId || '',
+      customer_line_name:booking.lineDisplayName || '',
+      customer_line_pic: booking.linePictureUrl || '',
+      services:          svcNames,
+      note:              booking.note || '',
+      deposit_amount:    100,
+      status:            'WAITING_ADMIN_CONFIRM',
+    };
+
+    await sb.insert('bookings', bookingData);
+
+    // 2. แปลงรูปสลิปเป็น base64 แล้วบันทึก
+    const slipBase64 = await sb.uploadSlip(file, booking.ref);
+    await sb.update('bookings', {booking_ref: booking.ref}, {slip_url: slipBase64});
+
+    // 3. บันทึกใน payments table
+    const rows = await sb.select('bookings', `booking_ref=eq.${booking.ref}&select=id`);
+    if(rows && rows[0]){
+      await sb.insert('payments', {
+        booking_id:  rows[0].id,
+        booking_ref: booking.ref,
+        slip_url:    slipBase64,
+      });
+    }
+
+    showToast('✅ ส่งข้อมูลสำเร็จ!');
+    setTimeout(()=>{ renderSuccess(); showScreen('screen-success'); }, 800);
+
+  } catch(err) {
+    console.error('Supabase error:', err);
+    btn.disabled = false;
+    btn.textContent = 'ส่งสลิป ✓';
+    showToast('❌ เกิดข้อผิดพลาด กรุณาลองใหม่');
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1605,16 +1715,27 @@ function renderLockNumbers(){
 renderLockNumbers();
 
 /* ═══════════════════════════════════════════════
-   POINTS
+   POINTS (ดึงจาก Supabase)
 ═══════════════════════════════════════════════ */
-const MOCK_POINTS = {'0812345678':7,'0898765432':12,'0911111111':3};
-function lookupPoints(){
+async function lookupPoints(){
   const phone=document.getElementById('pts-phone').value.trim();
   if(!/^[0-9]{10}$/.test(phone)){showToast('กรุณากรอกเบอร์โทร 10 หลัก');return;}
-  const pts=MOCK_POINTS[phone]||0;
-  document.getElementById('pts-count').textContent=pts;
-  document.getElementById('points-lookup').style.display='none';
-  document.getElementById('points-result').style.display='block';
+  const btn = document.querySelector('#points-lookup .btn-primary');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังตรวจสอบ...'; }
+  try {
+    const rows = await sb.select('point_customers', `phone=eq.${phone}&select=total_points,name`);
+    const pts = rows && rows[0] ? rows[0].total_points : 0;
+    document.getElementById('pts-count').textContent = pts;
+    document.getElementById('points-lookup').style.display='none';
+    document.getElementById('points-result').style.display='block';
+  } catch(e){
+    // ถ้าตาราง point_customers ยังไม่มี แสดง 0 แต้ม
+    document.getElementById('pts-count').textContent = '0';
+    document.getElementById('points-lookup').style.display='none';
+    document.getElementById('points-result').style.display='block';
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='ตรวจสอบแต้ม'; }
+  }
 }
 
 /* ═══════════════════════════════════════════════
