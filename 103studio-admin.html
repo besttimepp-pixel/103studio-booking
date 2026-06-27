@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>103STUDIO — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --red:#C0392B;--red-dark:#96281B;--red-light:#FADBD8;--red-xlight:#FEF5F4;
+  --white:#fff;--surface:#F8F9FA;--text:#1C2833;--text-mid:#566573;--text-light:#95A5A6;
+  --border:#E8DADF;--border-mid:#D5D8DC;
+  --green:#1E8449;--green-light:#EAFAF1;
+  --yellow:#B7950B;--yellow-light:#FEFDE7;
+  --radius:14px;--radius-sm:10px;
+  --shadow:0 2px 16px rgba(192,57,43,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:#F4F6F8;font-family:'Noto Sans Thai',sans-serif;color:var(--text)}
+
+/* LOGIN */
+#login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,var(--red-dark),var(--red) 60%,#E74C3C)}
+.login-card{background:var(--white);border-radius:24px;padding:36px 28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-family:'Prompt',sans-serif;font-size:28px;font-weight:700;color:var(--red)}
+.login-logo p{font-size:13px;color:var(--text-mid);margin-top:4px}
+.login-field{margin-bottom:16px}
+.login-field label{font-size:13px;font-weight:600;color:var(--text-mid);display:block;margin-bottom:7px}
+.login-field input{width:100%;height:50px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 16px;font-family:'Noto Sans Thai',sans-serif;font-size:15px;outline:none;transition:.2s}
+.login-field input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
+.login-btn{width:100%;height:52px;background:var(--red);color:#fff;border:none;border-radius:28px;font-family:'Prompt',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;transition:.2s;box-shadow:0 4px 16px rgba(192,57,43,.3)}
+.login-btn:hover{background:var(--red-dark)}
+.login-err{font-size:13px;color:var(--red);text-align:center;margin-top:10px;min-height:20px}
+
+/* APP SHELL */
+#admin-app{display:none;min-height:100vh;flex-direction:column}
+#admin-app.show{display:flex}
+
+/* SIDEBAR + LAYOUT */
+.admin-layout{display:flex;flex:1;min-height:calc(100vh - 60px)}
+.sidebar{width:240px;background:var(--white);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.main-content{flex:1;padding:24px;overflow-x:hidden}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main-content{padding:16px}
+}
+
+/* TOP NAV */
+.topnav{height:60px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border)}
+.topnav-brand{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--red)}
+.topnav-brand span{font-size:12px;font-weight:400;color:var(--text-light);margin-left:8px}
+.topnav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topnav-user{font-size:13px;color:var(--text-mid)}
+.btn-logout{font-size:13px;color:var(--red);border:1.5px solid var(--red-light);background:var(--red-xlight);padding:6px 14px;border-radius:20px;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;transition:.2s}
+.btn-logout:hover{background:var(--red);color:#fff}
+
+/* MOBILE NAV TOGGLE */
+.mob-menu-btn{display:none;width:36px;height:36px;background:var(--surface);border:none;border-radius:8px;cursor:pointer;font-size:18px;align-items:center;justify-content:center}
+@media(max-width:768px){.mob-menu-btn{display:flex}}
+
+/* MOBILE SIDEBAR OVERLAY */
+.mob-sidebar{display:none;position:fixed;inset:0;z-index:200}
+.mob-sidebar.open{display:flex}
+.mob-sidebar-overlay{flex:1;background:rgba(0,0,0,.4)}
+.mob-sidebar-panel{width:260px;background:var(--white);height:100%;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column}
+
+/* SIDEBAR MENU */
+.sidebar-header{padding:20px 20px 12px;border-bottom:1px solid var(--border)}
+.sidebar-header h3{font-family:'Prompt',sans-serif;font-size:14px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.8px}
+.sidebar-menu{padding:8px 0;flex:1}
+.menu-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;transition:.2s;border:none;background:transparent;width:100%;text-align:left;font-family:'Noto Sans Thai',sans-serif;font-size:14px;color:var(--text-mid);border-left:3px solid transparent}
+.menu-item:hover{background:var(--red-xlight);color:var(--red)}
+.menu-item.active{background:var(--red-xlight);color:var(--red);border-left-color:var(--red);font-weight:600}
+.menu-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+
+/* PANELS */
+.panel{display:none;animation:fadeIn .2s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE TITLE */
+.page-title{margin-bottom:20px}
+.page-title h2{font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;color:var(--text)}
+.page-title p{font-size:13px;color:var(--text-mid);margin-top:4px}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title .ct-icon{font-size:18px}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px;box-shadow:var(--shadow)}
+.stat-num{font-family:'Prompt',sans-serif;font-size:32px;font-weight:700;color:var(--red);line-height:1}
+.stat-label{font-size:12px;color:var(--text-mid);margin-top:6px}
+.stat-icon{font-size:28px;margin-bottom:8px}
+
+/* FORM ELEMENTS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-group{margin-bottom:14px}
+.form-label{font-size:13px;font-weight:600;color:var(--text-mid);display:block;margin-bottom:6px}
+.form-input{width:100%;height:46px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 14px;font-family:'Noto Sans Thai',sans-serif;font-size:14px;color:var(--text);outline:none;transition:.2s;background:var(--white)}
+.form-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
+.form-textarea{height:80px;padding:12px 14px;resize:vertical;line-height:1.5}
+select.form-input{cursor:pointer}
+
+/* BUTTONS */
+.btn{height:40px;padding:0 18px;border-radius:20px;font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-red{background:var(--red);color:#fff;box-shadow:0 2px 10px rgba(192,57,43,.25)}
+.btn-red:hover{background:var(--red-dark)}
+.btn-outline{background:var(--white);color:var(--red);border:1.5px solid var(--red-light)}
+.btn-outline:hover{background:var(--red-xlight)}
+.btn-gray{background:var(--surface);color:var(--text-mid);border:1.5px solid var(--border)}
+.btn-gray:hover{background:var(--border)}
+.btn-danger{background:#FDEDEC;color:#C0392B;border:1.5px solid #FADBD8}
+.btn-danger:hover{background:#C0392B;color:#fff}
+.btn-green{background:var(--green-light);color:var(--green);border:1.5px solid #A9DFBF}
+.btn-green:hover{background:var(--green);color:#fff}
+.btn-sm{height:32px;padding:0 12px;font-size:12px}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;min-width:500px}
+th{background:var(--surface);padding:11px 14px;font-size:12px;font-weight:700;color:var(--text-mid);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase;letter-spacing:.5px}
+td{padding:12px 14px;font-size:14px;color:var(--text);border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--red-xlight)}
+.td-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-red{background:var(--red-xlight);color:var(--red)}
+.badge-yellow{background:var(--yellow-light);color:var(--yellow)}
+.badge-gray{background:var(--surface);color:var(--text-mid)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal-overlay.open{display:flex;animation:fadeIn .2s}
+@media(min-width:600px){.modal-overlay{align-items:center;padding:20px}}
+.modal{background:var(--white);border-radius:24px 24px 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
+@media(min-width:600px){.modal{border-radius:20px}}
+.modal-title{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:20px;padding-right:36px}
+.modal-close{position:absolute;top:20px;right:20px;width:32px;height:32px;border:none;background:var(--surface);border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-mid)}
+.modal-close:hover{background:var(--red-light);color:var(--red)}
+.modal-footer{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+/* SECTION DIVIDER */
+.section-label{font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px}
+
+/* TOGGLE SWITCH */
+.toggle-wrap{display:flex;align-items:center;gap:10px}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border-mid);border-radius:24px;cursor:pointer;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked + .toggle-slider{background:var(--red)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px)}
+.toggle-label{font-size:14px;color:var(--text)}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px}
+.empty-state .ei{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:14px;color:var(--text-mid)}
+
+/* CHIP TAGS */
+.chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--red-xlight);color:var(--red);font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--red-light)}
+.chip-rm{cursor:pointer;font-size:14px;line-height:1;margin-left:2px;color:var(--red)}
+.chip-rm:hover{color:var(--red-dark)}
+
+/* COLOR PREVIEW */
+.color-dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px;border:1px solid rgba(0,0,0,.1)}
+
+/* TOAST */
+#admin-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;padding:10px 22px;border-radius:28px;font-size:14px;opacity:0;transition:.3s;z-index:9999;white-space:nowrap;pointer-events:none}
+#admin-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* PRICE TABS */
+.price-tab-btn{height:42px;padding:0 20px;border-radius:22px;border:1.5px solid var(--border);background:var(--white);font-family:'Noto Sans Thai',sans-serif;font-size:14px;color:var(--text-mid);cursor:pointer;transition:.2s;font-weight:500}
+.price-tab-btn.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:700;box-shadow:0 2px 10px rgba(192,57,43,.25)}
+.price-tab-btn:hover:not(.active){border-color:var(--red);color:var(--red)}
+
+/* PRICE NOTE ROW */
+.price-note-row td{font-size:12px;color:var(--red);font-style:italic;background:#fff9f8;padding:7px 14px!important}
+
+/* HAND FOOT COLS */
+.col-hand{color:var(--red);font-weight:600;font-family:'Prompt',sans-serif;white-space:nowrap}
+.col-foot{color:#8B4513;font-weight:600;font-family:'Prompt',sans-serif;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ═══════════════════════════════════════ -->
+<div id="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <h1>103STUDIO</h1>
+      <p>Admin Panel · ระบบจัดการร้าน</p>
+    </div>
+    <div class="login-field">
+      <label>ชื่อผู้ใช้</label>
+      <input type="text" id="inp-user" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="login-field">
+      <label>รหัสผ่าน</label>
+      <input type="password" id="inp-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="login-err" id="login-err"></div>
+    <p style="font-size:11px;color:var(--text-light);text-align:center;margin-top:14px">Demo: admin / 1234</p>
+  </div>
+</div>
+
+<!-- ══ ADMIN APP ════════════════════════════════════ -->
+<div id="admin-app">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <button class="mob-menu-btn" onclick="openMobMenu()">☰</button>
+    <div class="topnav-brand">103STUDIO <span>Admin</span></div>
+    <div class="topnav-right">
+      <span class="topnav-user" id="nav-username"></span>
+      <button class="btn-logout" onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="sidebar" id="sidebar-desktop">
+      <div id="sidebar-content-desktop"></div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- ── PANEL: DASHBOARD ── -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="page-title">
+          <h2>📊 ภาพรวมระบบ</h2>
+          <p>สรุปข้อมูลการจองและการจัดการร้าน</p>
+        </div>
+        <div class="stat-grid" id="dash-stats"></div>
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">📋</span>รายการจองล่าสุด</div>
+          <div class="table-wrap"><table id="dash-bookings-table">
+            <thead><tr><th>เลขที่จอง</th><th>ลูกค้า</th><th>สาขา</th><th>วัน-เวลา</th><th>สถานะ</th></tr></thead>
+            <tbody id="dash-bookings-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── PANEL: BOOKINGS ── -->
+      <div class="panel" id="panel-bookings">
+        <div class="page-title">
+          <h2>📋 รายการจองทั้งหมด</h2>
+          <p>ดูและจัดการคิวลูกค้าแบบ Real-time</p>
+        </div>
+        <!-- Filter -->
+        <div class="card" style="padding:14px 16px;margin-bottom:12px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select class="form-input" id="bk-filter-status" style="height:38px;flex:1;min-width:140px">
+              <option value="">ทุกสถานะ</option>
+              <option value="WAITING_ADMIN_CONFIRM">รอตรวจสลิป</option>
+              <option value="CONFIRMED">ยืนยันแล้ว</option>
+              <option value="WAITING_PAYMENT">รอชำระ</option>
+              <option value="CANCELLED">ยกเลิก</option>
+            </select>
+            <button class="btn btn-red" style="height:38px" onclick="loadBookings()">🔍 ค้นหา</button>
+            <button class="btn btn-gray" style="height:38px" onclick="loadBookings()">🔄 รีเฟรช</button>
+          </div>
+        </div>
+        <div id="bookings-list"></div>
+      </div>
+
+      <!-- ── PANEL: BRANCHES ── -->
+      <div class="panel" id="panel-branches">
+        <div class="page-title">
+          <h2>🏠 จัดการสาขา</h2>
+          <p>เพิ่ม แก้ไข และจัดการสาขาของร้าน</p>
+        </div>
+        <div style="margin-bottom:14px"><button class="btn btn-red" onclick="openBranchModal()">+ เพิ่มสาขา</button></div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ชื่อสาขา</th><th>ที่อยู่</th><th>ช่างประจำ</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+            <tbody id="branches-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── PANEL: STAFFS ── -->
+      <div class="panel" id="panel-staffs">
+        <div class="page-title">
+          <h2>👥 จัดการช่าง</h2>
+          <p>เพิ่ม แก้ไข ช่างประจำแต่ละสาขา</p>
+        </div>
+        <div style="margin-bottom:14px"><button class="btn btn-red" onclick="openStaffModal()">+ เพิ่มช่าง</button></div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ชื่อช่าง</th><th>สาขา</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+            <tbody id="staffs-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── PANEL: SERVICES ── -->
+      <div class="panel" id="panel-services">
+        <div class="page-title">
+          <h2>💅 จัดการบริการ</h2>
+          <p>เพิ่ม แก้ไข รายการบริการที่ลูกค้าเลือกได้</p>
+        </div>
+        <div style="margin-bottom:14px"><button class="btn btn-red" onclick="openServiceModal()">+ เพิ่มบริการ</button></div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ลำดับ</th><th>ชื่อบริการ</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+            <tbody id="services-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── PANEL: PRICES ── -->
+      <div class="panel" id="panel-prices">
+        <div class="page-title">
+          <h2>💰 จัดการราคา</h2>
+          <p>ราคาแยกตามสาขา — แก้ไขได้อิสระแต่ละสาขา</p>
+        </div>
+        <!-- Branch Tabs -->
+        <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+          <button class="price-tab-btn active" id="ptab-1" onclick="switchPriceTab(1)">
+            📍 ตลาดเซฟวันโก
+          </button>
+          <button class="price-tab-btn" id="ptab-2" onclick="switchPriceTab(2)">
+            📍 ยูเพลินมอลล์ คลองหก
+          </button>
+        </div>
+        <div style="margin-bottom:14px">
+          <button class="btn btn-red" id="btn-add-price" onclick="openPriceModal()">+ เพิ่มรายการราคา</button>
+        </div>
+        <div id="prices-list-admin"></div>
+      </div>
+
+      <!-- ── PANEL: CONTACT ── -->
+      <div class="panel" id="panel-contact">
+        <div class="page-title">
+          <h2>📞 ข้อมูลติดต่อร้าน</h2>
+          <p>แก้ไขช่องทางติดต่อที่แสดงในหน้าเว็บ</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">🏠</span>ข้อมูลทั่วไป</div>
+          <div class="form-group">
+            <label class="form-label">เบอร์โทรศัพท์</label>
+            <input class="form-input" id="ct-phone" type="tel" placeholder="098-765-4321"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">LINE OA</label>
+            <input class="form-input" id="ct-line" placeholder="@103studio"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Facebook Page</label>
+            <input class="form-input" id="ct-fb" placeholder="103STUDIO Nail Salon"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Google Maps Link</label>
+            <input class="form-input" id="ct-map" placeholder="https://maps.google.com/..."/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">เวลาเปิดทำการ</label>
+            <input class="form-input" id="ct-hours" placeholder="11:30 – 21:30 น. ทุกวัน"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ข้อความแนะนำการเดินทาง</label>
+            <textarea class="form-input form-textarea" id="ct-direction" placeholder="เช่น ใกล้ BTS อ่อนนุช ออกทางออก 3..."></textarea>
+          </div>
+          <button class="btn btn-red" onclick="saveContact()">💾 บันทึกข้อมูลติดต่อ</button>
+        </div>
+      </div>
+
+      <!-- ── PANEL: LOCK NUMBERS ── -->
+      <div class="panel" id="panel-lock">
+        <div class="page-title">
+          <h2>🔒 เลขล็อกวันนี้</h2>
+          <p>อัปเดตเลขล็อกที่จะแสดงให้ลูกค้าเห็นแบบ Real-time</p>
+        </div>
+        <div id="lock-editor"></div>
+        <button class="btn btn-red" style="margin-top:4px" onclick="saveLockNumbers()">💾 บันทึกเลขล็อก</button>
+      </div>
+
+      <!-- ── PANEL: QR CODE ── -->
+      <div class="panel" id="panel-qr">
+        <div class="page-title">
+          <h2>📱 QR Code มัดจำ</h2>
+          <p>อัปโหลด QR PromptPay ที่ลูกค้าจะสแกนชำระมัดจำ</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">📲</span>QR Code ปัจจุบัน</div>
+          <div style="text-align:center;padding:16px 0">
+            <div id="qr-preview-wrap" style="width:180px;height:180px;border:2px solid var(--border);border-radius:var(--radius);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:var(--surface);overflow:hidden">
+              <span id="qr-preview-placeholder" style="font-size:40px">📷</span>
+              <img id="qr-preview-img" style="display:none;width:100%;height:100%;object-fit:cover"/>
+            </div>
+            <label style="cursor:pointer">
+              <input type="file" id="qr-file-input" accept="image/*" style="display:none" onchange="previewQR(this)"/>
+              <div class="btn btn-outline" onclick="document.getElementById('qr-file-input').click()">📤 อัปโหลด QR ใหม่</div>
+            </label>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label class="form-label">จำนวนมัดจำ (บาท)</label>
+            <input class="form-input" id="deposit-amount" type="number" value="100" min="0"/>
+          </div>
+          <button class="btn btn-red" onclick="saveQR()">💾 บันทึก QR และมัดจำ</button>
+        </div>
+      </div>
+
+      <!-- ── PANEL: SETTINGS ── -->
+      <div class="panel" id="panel-settings">
+        <div class="page-title">
+          <h2>⚙️ ตั้งค่าระบบ</h2>
+          <p>กำหนดค่าทั่วไปของระบบจองคิว</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">🕐</span>เวลาทำการ</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">เวลาเปิด</label>
+              <input class="form-input" id="open-time" type="time" value="11:30"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">เวลาปิด</label>
+              <input class="form-input" id="close-time" type="time" value="21:30"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ระยะเวลาชำระมัดจำ (นาที)</label>
+            <input class="form-input" id="pay-timeout" type="number" value="15" min="5" max="60"/>
+          </div>
+          <button class="btn btn-red" onclick="saveSettings()">💾 บันทึกตั้งค่า</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">🔐</span>เปลี่ยนรหัสผ่าน Admin</div>
+          <div class="form-group">
+            <label class="form-label">รหัสผ่านปัจจุบัน</label>
+            <input class="form-input" type="password" id="pw-current" placeholder="••••••••"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">รหัสผ่านใหม่</label>
+            <input class="form-input" type="password" id="pw-new" placeholder="••••••••"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
+            <input class="form-input" type="password" id="pw-confirm" placeholder="••••••••"/>
+          </div>
+          <button class="btn btn-red" onclick="changePassword()">🔑 เปลี่ยนรหัสผ่าน</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MOBILE SIDEBAR OVERLAY -->
+<div class="mob-sidebar" id="mob-sidebar" onclick="closeMobMenu()">
+  <div class="mob-sidebar-panel" onclick="event.stopPropagation()">
+    <div id="sidebar-content-mobile"></div>
+  </div>
+  <div class="mob-sidebar-overlay"></div>
+</div>
+
+<!-- ══ MODALS ══════════════════════════════════════ -->
+
+<!-- Branch Modal -->
+<div class="modal-overlay" id="modal-branch">
+  <div class="modal">
+    <div class="modal-title" id="branch-modal-title">เพิ่มสาขา</div>
+    <button class="modal-close" onclick="closeModal('modal-branch')">✕</button>
+    <input type="hidden" id="branch-edit-id"/>
+    <div class="form-group">
+      <label class="form-label">ชื่อสาขา <span style="color:var(--red)">*</span></label>
+      <input class="form-input" id="branch-name" placeholder="เช่น ตลาดเซฟวันโก"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ที่อยู่ / รายละเอียดสาขา</label>
+      <input class="form-input" id="branch-sub" placeholder="เช่น แยก คปอ."/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">LINE Group ID (สำหรับแจ้งเตือนช่าง)</label>
+      <input class="form-input" id="branch-line-group" placeholder="C1234567890..."/>
+    </div>
+    <div class="toggle-wrap" style="margin-bottom:14px">
+      <label class="toggle"><input type="checkbox" id="branch-active" checked/><span class="toggle-slider"></span></label>
+      <span class="toggle-label">เปิดรับจอง</span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('modal-branch')">ยกเลิก</button>
+      <button class="btn btn-red" onclick="saveBranch()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Staff Modal -->
+<div class="modal-overlay" id="modal-staff">
+  <div class="modal">
+    <div class="modal-title" id="staff-modal-title">เพิ่มช่าง</div>
+    <button class="modal-close" onclick="closeModal('modal-staff')">✕</button>
+    <input type="hidden" id="staff-edit-id"/>
+    <div class="form-group">
+      <label class="form-label">ชื่อช่าง <span style="color:var(--red)">*</span></label>
+      <input class="form-input" id="staff-name" placeholder="เช่น ช่างโย"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">สาขาประจำ <span style="color:var(--red)">*</span></label>
+      <select class="form-input" id="staff-branch"></select>
+    </div>
+    <div class="toggle-wrap" style="margin-bottom:14px">
+      <label class="toggle"><input type="checkbox" id="staff-active" checked/><span class="toggle-slider"></span></label>
+      <span class="toggle-label">รับงานอยู่</span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('modal-staff')">ยกเลิก</button>
+      <button class="btn btn-red" onclick="saveStaff()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Service Modal -->
+<div class="modal-overlay" id="modal-service">
+  <div class="modal">
+    <div class="modal-title" id="service-modal-title">เพิ่มบริการ</div>
+    <button class="modal-close" onclick="closeModal('modal-service')">✕</button>
+    <input type="hidden" id="service-edit-id"/>
+    <div class="form-group">
+      <label class="form-label">ชื่อบริการ <span style="color:var(--red)">*</span></label>
+      <input class="form-input" id="service-name" placeholder="เช่น ทาสีเจลมือ"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ลำดับการแสดงผล</label>
+      <input class="form-input" id="service-order" type="number" value="0" min="0"/>
+    </div>
+    <div class="toggle-wrap" style="margin-bottom:14px">
+      <label class="toggle"><input type="checkbox" id="service-active" checked/><span class="toggle-slider"></span></label>
+      <span class="toggle-label">แสดงในหน้าจอง</span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('modal-service')">ยกเลิก</button>
+      <button class="btn btn-red" onclick="saveService()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Price Modal -->
+<div class="modal-overlay" id="modal-price">
+  <div class="modal">
+    <div class="modal-title" id="price-modal-title">เพิ่มรายการราคา</div>
+    <button class="modal-close" onclick="closeModal('modal-price')">✕</button>
+    <input type="hidden" id="price-edit-id"/>
+    <div class="form-group">
+      <label class="form-label">สาขา <span style="color:var(--red)">*</span></label>
+      <select class="form-input" id="price-branch">
+        <option value="1">📍 ตลาดเซฟวันโก แยก คปอ.</option>
+        <option value="2">📍 ยูเพลินมอลล์ เฟส 2 คลองหก</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">หมวดหมู่ <span style="color:var(--red)">*</span></label>
+      <input class="form-input" id="price-cat" placeholder="เช่น ทาสี (COLOR), ต่อเล็บ"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">ชื่อรายการ <span style="color:var(--red)">*</span></label>
+      <input class="form-input" id="price-name" placeholder="เช่น ทาสีพื้น (1สี)"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">ราคามือ (Hand)</label>
+        <input class="form-input" id="price-hand" placeholder="เช่น 150.- หรือ 150-200.-"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ราคาเท้า (Foot)</label>
+        <input class="form-input" id="price-foot" placeholder="เช่น 250.- หรือ ว่างถ้าไม่มี"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('modal-price')">ยกเลิก</button>
+      <button class="btn btn-red" onclick="savePrice()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">🗑️</div>
+    <div class="modal-title" style="text-align:center;padding:0">ยืนยันการลบ?</div>
+    <p style="font-size:14px;color:var(--text-mid);margin:10px 0 20px" id="confirm-msg">ต้องการลบรายการนี้ใช่ไหม?</p>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="btn btn-gray" onclick="closeModal('modal-confirm')">ยกเลิก</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">ลบ</button>
+    </div>
+  </div>
+</div>
+
+<div id="admin-toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   SHARED DATA STORE  (in-memory — swap to API/DB later)
+═══════════════════════════════════════════════════ */
+let DB = {
+  branches:[
+    {id:1,name:'ตลาดเซฟวันโก',sub:'แยก คปอ.',lineGroup:'',active:true},
+    {id:2,name:'ยูเพลินมอลล์ เฟส 2',sub:'คลองหก',lineGroup:'',active:true},
+  ],
+  staffs:[
+    {id:1,branch_id:1,name:'ช่างโย',active:true},
+    {id:2,branch_id:1,name:'ช่างแป้ว',active:true},
+    {id:3,branch_id:1,name:'ช่างโฟกัส',active:true},
+    {id:4,branch_id:2,name:'ช่างปิ๊ก',active:true},
+  ],
+  services:[
+    {id:1,name:'ทาสีเจลมือ',order:1,active:true},
+    {id:2,name:'ทาสีเจลเท้า',order:2,active:true},
+    {id:3,name:'ทาสีเจลมือและเท้า',order:3,active:true},
+    {id:4,name:'ต่อเล็บ',order:4,active:true},
+    {id:5,name:'ถอดเล็บ PVC',order:5,active:true},
+    {id:6,name:'ล้างสีเจล',order:6,active:true},
+    {id:7,name:'เพ้นท์ลาย',order:7,active:true},
+    {id:8,name:'อื่นๆ (ระบุหน้าร้าน)',order:8,active:true},
+  ],
+  prices:[
+    // ── สาขา 1: ตลาดเซฟวันโก แยก คปอ. ──
+    {id:1, branch_id:1, cat:'ทาสี (COLOR)', name:'ทาสีพื้น (1สี) มือ', hand:'150.-', foot:'250.-'},
+    {id:2, branch_id:1, cat:'ทาสี (COLOR)', name:'ทาสีขาว ดำ มือ', hand:'200.-', foot:'300.-'},
+    {id:3, branch_id:1, cat:'ทาสี (COLOR)', name:'สีแฟลช 1สี', hand:'250.-', foot:'350.-'},
+    {id:4, branch_id:1, cat:'ทาสี (COLOR)', name:'สีลูกแก้ว 1สี', hand:'250-350.-', foot:'300-400.-'},
+    {id:5, branch_id:1, cat:'ทาสี (COLOR)', name:'สีกลิตเตอร์ 1สี', hand:'250-400.-', foot:'300-450.-'},
+    {id:6, branch_id:1, cat:'ทาสี (COLOR)', name:'สีชิมเมอร์, สีไซรัป 1สี', hand:'250-300.-', foot:'300-350.-'},
+    {id:7, branch_id:1, cat:'ทาสี (COLOR)', name:'ตัดหนัง (ทาสี)', hand:'100.-', foot:'200.-'},
+    {id:8, branch_id:1, cat:'ทาสี (COLOR)', name:'ตัดหนังไม่ทาสี', hand:'150.-', foot:'250.-'},
+    {id:9, branch_id:1, cat:'ทาสี (COLOR)', name:'🔸 สีที่ 2 เพิ่ม 50 บาท | บุฟเฟต์สี เพิ่ม 100 บาท', hand:'', foot:''},
+    {id:10,branch_id:1, cat:'ล้างสีเจล (ทำใหม่ ลูกค้าเก่า/ใหม่)', name:'ล้างสีเจล', hand:'50.-', foot:'50.-'},
+    {id:11,branch_id:1, cat:'ล้างสีเจล (ทำใหม่ ลูกค้าเก่า/ใหม่)', name:'ถอด PVC', hand:'100.-', foot:'100.-'},
+    {id:12,branch_id:1, cat:'ล้างสีเจล (ทำใหม่ ลูกค้าเก่า/ใหม่)', name:'ถอดอะคลีลิก, โพลี่เจล', hand:'100.-', foot:'100.-'},
+    {id:13,branch_id:1, cat:'ล้างสีเจล (พักเล็บ ลูกค้าเก่า/ใหม่)', name:'ล้างสีเจล', hand:'120.-', foot:''},
+    {id:14,branch_id:1, cat:'ล้างสีเจล (พักเล็บ ลูกค้าเก่า/ใหม่)', name:'ถอด PVC', hand:'200.-', foot:''},
+    {id:15,branch_id:1, cat:'ล้างสีเจล (พักเล็บ ลูกค้าเก่า/ใหม่)', name:'ถอดอะคลีลิก, ถอดโพลี่เจล', hand:'250.-', foot:''},
+    {id:16,branch_id:1, cat:'ล้างสีเจล (พักเล็บ ลูกค้าเก่า/ใหม่)', name:'🔸 กรณีมีไอเซ่เยอะหรืองานหนา เก็บเพิ่ม 20-60 บาท', hand:'', foot:''},
+    {id:17,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'ต่อ PVC ชิดโคนกาวเจล', hand:'200.-', foot:''},
+    {id:18,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'*ต่อ PVC เว้นโคนกาวเจลง', hand:'300.-', foot:''},
+    {id:19,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'ต่อเจล, ต่อโพลี่เจล (สีในเจล, ใส)', hand:'999.-', foot:''},
+    {id:20,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'เติมโคนเจล, เติมโคนโพลี่เจล', hand:'699.-', foot:''},
+    {id:21,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'🔸 ต่อเจล โพลี่เจล ลดราคาสีลูกแก้ว แฟลช กลิตเตอร์ ชิมเมอร์ 10% จากราคาชาร์จสี', hand:'', foot:''},
+    {id:22,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'เสริมหน้าเล็บ', hand:'150.- (ไม่ทาสี 200.-)', foot:''},
+    {id:23,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'OVERLAY', hand:'300.-', foot:''},
+    {id:24,branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'OVERLAY (สีในเจล)', hand:'350.-', foot:''},
+    // ── สาขา 2: ยูเพลินมอลล์ คลองหก ──
+    {id:25,branch_id:2, cat:'ทาสี (COLOR)', name:'ทาสีพื้น (1สี)', hand:'189.-', foot:'300.-'},
+    {id:26,branch_id:2, cat:'ทาสี (COLOR)', name:'ทาสีขาว แดง ดำ เหลือง', hand:'250.-', foot:'350.-'},
+    {id:27,branch_id:2, cat:'ทาสี (COLOR)', name:'สีแฟลช 1สี', hand:'300.-', foot:'350.-'},
+    {id:28,branch_id:2, cat:'ทาสี (COLOR)', name:'สีลูกแก้ว 1สี', hand:'300.-', foot:'350.-'},
+    {id:29,branch_id:2, cat:'ทาสี (COLOR)', name:'สีกลิตเตอร์ 1สี', hand:'400.-', foot:'450.-'},
+    {id:30,branch_id:2, cat:'ทาสี (COLOR)', name:'สีชิมเมอร์, สีไซรัป 1สี', hand:'300.-', foot:'350.-'},
+    {id:31,branch_id:2, cat:'ทาสี (COLOR)', name:'🔸 สีที่ 2 เพิ่ม 50 บาท/สี | บุฟเฟต์สี เพิ่ม 100 บาท', hand:'', foot:''},
+    {id:32,branch_id:2, cat:'ทาสี (COLOR)', name:'ตัดหนัง', hand:'200.-', foot:'300.-'},
+    {id:33,branch_id:2, cat:'ทาสี (COLOR)', name:'ตัดหนัง เท้า + ขัดส้นเท้า', hand:'', foot:'499.-'},
+    {id:34,branch_id:2, cat:'ล้างสีเจล', name:'ค่าล้างสีเจล (ทำใหม่ ลูกค้าเก่า/ใหม่)', hand:'50.-', foot:'50.-'},
+    {id:35,branch_id:2, cat:'ล้างสีเจล', name:'ค่าล้างสีเจล (พักเล็บ ลูกค้าเก่า/ใหม่)', hand:'150.-', foot:'150.-'},
+    {id:36,branch_id:2, cat:'ล้างสีเจล', name:'ค่าถอด PVC (ทำใหม่ ลูกค้าเก่า/ใหม่)', hand:'100.-', foot:'100.-'},
+    {id:37,branch_id:2, cat:'ล้างสีเจล', name:'ค่าถอด PVC (พักเล็บ)', hand:'250.-', foot:'250.-'},
+    {id:38,branch_id:2, cat:'เสริมหน้าเล็บ / OVERLAY', name:'เสริมหน้าเล็บ', hand:'150.-', foot:''},
+    {id:39,branch_id:2, cat:'เสริมหน้าเล็บ / OVERLAY', name:'OVERLAY', hand:'300.-', foot:''},
+    {id:40,branch_id:2, cat:'เสริมหน้าเล็บ / OVERLAY', name:'OVERLAY + เฟรน', hand:'599.-', foot:''},
+    {id:41,branch_id:2, cat:'เสริมหน้าเล็บ / OVERLAY', name:'🔸 กรณีเสริม Overlay สีเจลในตัวไม่ทาสี เพิ่ม 50 บาท (สีในเจล)', hand:'', foot:''},
+    {id:42,branch_id:2, cat:'NAIL EXTENSION', name:'ต่อ PVC กาวเจลเว้นโคน', hand:'300.-', foot:''},
+    {id:43,branch_id:2, cat:'NAIL EXTENSION', name:'ต่อเจล 1สี', hand:'999.-', foot:''},
+    {id:44,branch_id:2, cat:'NAIL EXTENSION', name:'ต่อโพลี่เจล 1สี', hand:'999.-', foot:''},
+    {id:45,branch_id:2, cat:'NAIL EXTENSION', name:'ต่อปลายทิป 1สี', hand:'799.-', foot:''},
+    {id:46,branch_id:2, cat:'NAIL EXTENSION', name:'🔸 ราคาเฉพาะต่อมือ | ต่อเท้าเพิ่ม 100.- ทุกรายการต่อ', hand:'', foot:''},
+  ],
+  contact:{phone:'098-765-4321',line:'@103studio',fb:'103STUDIO Nail Salon',map:'',hours:'11:30 – 21:30 น. ทุกวัน',direction:''},
+  lock:[
+    {branch_id:1,numbers:'47, 12, 89, 36'},
+    {branch_id:2,numbers:'23, 67, 04, 88'},
+  ],
+  settings:{openTime:'11:30',closeTime:'21:30',payTimeout:15,deposit:100},
+  bookings:[
+    {ref:'BK20260619101',name:'นุ้ย',phone:'0812345678',branch_id:1,date:'2026-06-27',time:'14:00',staff:'ช่างโย',services:'ทาสีเจลมือ',status:'WAITING_ADMIN_CONFIRM'},
+    {ref:'BK20260619102',name:'ปุ้ย',phone:'0898765432',branch_id:2,date:'2026-06-27',time:'15:00',staff:'ช่างปิ๊ก',services:'ทาสีเจลมือและเท้า',status:'CONFIRMED'},
+    {ref:'BK20260619103',name:'แพร',phone:'0911111111',branch_id:1,date:'2026-06-28',time:'11:30',staff:'ช่างแป้ว',services:'เพ้นท์ลาย',status:'CONFIRMED'},
+  ],
+  nextId:100,
+};
+let nextId=()=>++DB.nextId;
+
+/* ═══════════════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════════════ */
+const ADMIN_USERS=[{u:'admin',p:'1234',role:'owner',display:'Admin (Owner)'}];
+let currentUser=null;
+
+/* ═══════════════════════════════════════════════════
+   SUPABASE CONFIG
+═══════════════════════════════════════════════════ */
+const SB_URL = 'https://nhkewudaibspjzmpjqzq.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oa2V3dWRhaWJzcGp6bXBqcXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NTk0OTUsImV4cCI6MjA5ODEzNTQ5NX0.22oJM_fmX8u6rcGxpT2TVyCd5o8QObr7e_xTD9wHKow';
+
+const sba = {
+  async select(table, params=''){
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}&order=created_at.desc`, {
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async update(table, match, data){
+    const params = Object.entries(match).map(([k,v])=>`${k}=eq.${v}`).join('&');
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Prefer':'return=representation'},
+      body: JSON.stringify(data)
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+};
+
+function doLogin(){
+  const u=document.getElementById('inp-user').value.trim();
+  const p=document.getElementById('inp-pass').value;
+  const user=ADMIN_USERS.find(a=>a.u===u&&a.p===p);
+  if(!user){document.getElementById('login-err').textContent='ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';return;}
+  currentUser=user;
+  document.getElementById('login-err').textContent='';
+  document.getElementById('login-wrap').style.display='none';
+  document.getElementById('admin-app').classList.add('show');
+  document.getElementById('nav-username').textContent=user.display;
+  initAdmin();
+}
+function doLogout(){
+  currentUser=null;
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('admin-app').classList.remove('show');
+  document.getElementById('inp-pass').value='';
+}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR MENU
+═══════════════════════════════════════════════════ */
+const MENU=[
+  {id:'dashboard',icon:'📊',label:'ภาพรวม'},
+  {id:'bookings', icon:'📋',label:'รายการจอง'},
+  {id:'branches', icon:'🏠',label:'จัดการสาขา'},
+  {id:'staffs',   icon:'👥',label:'จัดการช่าง'},
+  {id:'services', icon:'💅',label:'จัดการบริการ'},
+  {id:'prices',   icon:'💰',label:'จัดการราคา'},
+  {id:'contact',  icon:'📞',label:'ข้อมูลติดต่อ'},
+  {id:'lock',     icon:'🔒',label:'เลขล็อกวันนี้'},
+  {id:'qr',       icon:'📱',label:'QR Code มัดจำ'},
+  {id:'settings', icon:'⚙️', label:'ตั้งค่าระบบ'},
+];
+let activePanel='dashboard';
+
+function buildSidebar(containerId){
+  document.getElementById(containerId).innerHTML=`
+    <div class="sidebar-header"><h3>เมนูหลัก</h3></div>
+    <div class="sidebar-menu">
+      ${MENU.map(m=>`
+        <button class="menu-item${activePanel===m.id?' active':''}" onclick="switchPanel('${m.id}');closeMobMenu()">
+          <span class="menu-icon">${m.icon}</span>${m.label}
+        </button>`).join('')}
+    </div>`;
+}
+function switchPanel(id){
+  activePanel=id;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id)?.classList.add('active');
+  buildSidebar('sidebar-content-desktop');
+  buildSidebar('sidebar-content-mobile');
+  renderPanel(id);
+}
+function openMobMenu(){document.getElementById('mob-sidebar').classList.add('open');}
+function closeMobMenu(){document.getElementById('mob-sidebar').classList.remove('open');}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+function initAdmin(){
+  buildSidebar('sidebar-content-desktop');
+  buildSidebar('sidebar-content-mobile');
+  renderPanel('dashboard');
+  loadContactForm();
+  loadLockEditor();
+  loadSettingsForm();
+}
+function renderPanel(id){
+  const fns={
+    dashboard:renderDashboard,
+    bookings:loadBookings,
+    branches:renderBranches,
+    staffs:renderStaffs,
+    services:renderServices,
+    prices:renderPrices,
+  };
+  fns[id]?.();
+}
+
+/* ═══════════════════════════════════════════════════
+   BOOKINGS PANEL (Real-time จาก Supabase)
+═══════════════════════════════════════════════════ */
+async function loadBookings(){
+  const el = document.getElementById('bookings-list');
+  if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text-mid)">⏳ กำลังโหลด...</div>`;
+
+  try {
+    const statusFilter = document.getElementById('bk-filter-status')?.value || '';
+    let params = 'select=*';
+    if(statusFilter) params += `&status=eq.${statusFilter}`;
+
+    const bookings = await sba.select('bookings', params);
+    const statusBadge={CONFIRMED:'badge-green',WAITING_ADMIN_CONFIRM:'badge-yellow',CANCELLED:'badge-red',WAITING_PAYMENT:'badge-gray',EXPIRED:'badge-gray'};
+    const statusTH={CONFIRMED:'ยืนยันแล้ว',WAITING_ADMIN_CONFIRM:'รอตรวจสลิป',CANCELLED:'ยกเลิก',WAITING_PAYMENT:'รอชำระ',EXPIRED:'หมดเวลา'};
+
+    if(bookings.length===0){
+      el.innerHTML=`<div class="card"><div class="empty-state"><div class="ei">📋</div><p>ไม่มีรายการจอง</p></div></div>`;
+      return;
+    }
+
+    el.innerHTML = bookings.map(b=>`
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+          ${b.customer_line_pic
+            ? `<img src="${b.customer_line_pic}" style="width:44px;height:44px;border-radius:50%;flex-shrink:0;border:2px solid #06C755"/>`
+            : `<div style="width:44px;height:44px;border-radius:50%;background:var(--red-xlight);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">👤</div>`}
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <strong style="font-size:15px">${b.customer_name}</strong>
+              <span class="badge ${statusBadge[b.status]||'badge-gray'}">${statusTH[b.status]||b.status}</span>
+            </div>
+            ${b.customer_line_name ? `<div style="font-size:12px;color:#06C755">LINE: ${b.customer_line_name}</div>` : ''}
+            <div style="font-size:13px;color:var(--text-mid)">${b.customer_phone}</div>
+          </div>
+          <div style="text-align:right;font-size:12px;color:var(--red);font-weight:600">${b.booking_ref}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;background:var(--surface);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px">
+          <div><span style="color:var(--text-mid)">📍 สาขา</span><br/><strong>${b.branch_name||'-'}</strong></div>
+          <div><span style="color:var(--text-mid)">📅 วันที่</span><br/><strong>${b.booking_date}</strong></div>
+          <div><span style="color:var(--text-mid)">🕐 เวลา</span><br/><strong>${b.booking_time?.slice(0,5)} น.</strong></div>
+          <div><span style="color:var(--text-mid)">✂️ ช่าง</span><br/><strong>${b.staff_name||'ไม่ระบุ'}</strong></div>
+          <div style="grid-column:1/-1"><span style="color:var(--text-mid)">💅 บริการ</span><br/><strong>${b.services||'-'}</strong></div>
+          ${b.note?`<div style="grid-column:1/-1"><span style="color:var(--text-mid)">📝 หมายเหตุ</span><br/>${b.note}</div>`:''}
+        </div>
+        ${b.slip_url ? `
+          <div style="margin-bottom:12px">
+            <div style="font-size:12px;color:var(--text-mid);margin-bottom:6px">🧾 สลิปมัดจำ</div>
+            <img src="${b.slip_url}" style="width:100%;max-height:200px;object-fit:contain;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface)"/>
+          </div>` : `<div style="font-size:12px;color:var(--text-light);margin-bottom:12px">⏳ รอลูกค้าอัปโหลดสลิป</div>`}
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${b.status==='WAITING_ADMIN_CONFIRM' ? `
+            <button class="btn btn-green" onclick="confirmBookingAdmin('${b.booking_ref}')">✅ ยืนยันคิว</button>
+            <button class="btn btn-danger" onclick="cancelBookingAdmin('${b.booking_ref}')">❌ ยกเลิก</button>` : ''}
+          ${b.status==='CONFIRMED' ? `
+            <button class="btn btn-gray" onclick="cancelBookingAdmin('${b.booking_ref}')">❌ ยกเลิก</button>` : ''}
+        </div>
+      </div>`).join('');
+
+  } catch(err){
+    el.innerHTML=`<div class="card" style="color:var(--red)">❌ โหลดไม่ได้: ${err.message}</div>`;
+  }
+}
+
+async function confirmBookingAdmin(ref){
+  try {
+    await sba.update('bookings',{booking_ref:ref},{status:'CONFIRMED',updated_at:new Date().toISOString()});
+    toast('✅ ยืนยันคิวแล้ว!');
+    loadBookings();
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+async function cancelBookingAdmin(ref){
+  if(!confirm('ยืนยันการยกเลิกคิวนี้?')) return;
+  try {
+    await sba.update('bookings',{booking_ref:ref},{status:'CANCELLED',updated_at:new Date().toISOString()});
+    toast('🗑️ ยกเลิกคิวแล้ว');
+    loadBookings();
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+/* ═══════════════════════════════════════════════════
+   DASHBOARD  (ดึงข้อมูลจาก Supabase จริง)
+═══════════════════════════════════════════════════ */
+async function renderDashboard(){
+  document.getElementById('dash-stats').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-mid)">⏳ กำลังโหลด...</div>`;
+  document.getElementById('dash-bookings-body').innerHTML=`<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-mid)">กำลังโหลด...</td></tr>`;
+
+  try {
+    const bookings = await sba.select('bookings', 'select=*');
+    const today = new Date().toISOString().slice(0,10);
+    const todayBk  = bookings.filter(b=>b.booking_date===today && b.status==='CONFIRMED').length;
+    const pending  = bookings.filter(b=>b.status==='WAITING_ADMIN_CONFIRM').length;
+    const total    = bookings.length;
+    const deposit  = bookings.filter(b=>b.status==='CONFIRMED').length * 100;
+
+    document.getElementById('dash-stats').innerHTML=`
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num">${todayBk}</div><div class="stat-label">คิวยืนยันวันนี้</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num" style="color:var(--yellow)">${pending}</div><div class="stat-label">รอยืนยัน</div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-num">${total}</div><div class="stat-label">จองทั้งหมด</div></div>
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-num" style="font-size:22px">฿${deposit}</div><div class="stat-label">มัดจำยืนยันแล้ว</div></div>`;
+
+    const statusBadge={CONFIRMED:'badge-green',WAITING_ADMIN_CONFIRM:'badge-yellow',CANCELLED:'badge-red',WAITING_PAYMENT:'badge-gray',EXPIRED:'badge-gray'};
+    const statusTH={CONFIRMED:'ยืนยันแล้ว',WAITING_ADMIN_CONFIRM:'รอตรวจสลิป',CANCELLED:'ยกเลิก',WAITING_PAYMENT:'รอชำระ',EXPIRED:'หมดเวลา'};
+
+    if(bookings.length===0){
+      document.getElementById('dash-bookings-body').innerHTML=`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-mid)">ยังไม่มีการจอง</td></tr>`;
+      return;
+    }
+
+    document.getElementById('dash-bookings-body').innerHTML = bookings.slice(0,10).map(b=>`
+      <tr>
+        <td><strong style="color:var(--red);font-size:13px">${b.booking_ref}</strong></td>
+        <td>
+          ${b.customer_line_pic ? `<img src="${b.customer_line_pic}" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:6px;border:1px solid var(--border)"/>` : ''}
+          ${b.customer_name}<br/>
+          <span style="font-size:12px;color:var(--text-mid)">${b.customer_phone}</span>
+        </td>
+        <td style="font-size:13px">${b.branch_name||'-'}</td>
+        <td style="font-size:13px">${b.booking_date}<br/><span style="color:var(--text-mid)">${b.booking_time?.slice(0,5)} น.</span></td>
+        <td>
+          <span class="badge ${statusBadge[b.status]||'badge-gray'}">${statusTH[b.status]||b.status}</span>
+          ${b.status==='WAITING_ADMIN_CONFIRM'?`<br/><button class="btn btn-green btn-sm" style="margin-top:4px" onclick="confirmBooking('${b.booking_ref}')">✅ ยืนยัน</button>`:''}
+        </td>
+      </tr>`).join('');
+
+  } catch(err){
+    console.error(err);
+    document.getElementById('dash-stats').innerHTML=`<div style="grid-column:1/-1;color:var(--red);padding:16px">❌ โหลดข้อมูลไม่ได้: ${err.message}</div>`;
+  }
+}
+
+async function confirmBooking(ref){
+  try {
+    await sba.update('bookings', {booking_ref: ref}, {status:'CONFIRMED', updated_at: new Date().toISOString()});
+    toast('✅ ยืนยันคิวแล้ว!');
+    renderDashboard();
+  } catch(err){
+    toast('❌ เกิดข้อผิดพลาด: ' + err.message);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   BRANCHES
+═══════════════════════════════════════════════════ */
+function renderBranches(){
+  document.getElementById('branches-tbody').innerHTML=DB.branches.map(b=>{
+    const staffCount=DB.staffs.filter(s=>s.branch_id===b.id&&s.active).length;
+    return`<tr>
+      <td><strong>${b.name}</strong></td>
+      <td style="font-size:13px;color:var(--text-mid)">${b.sub||'–'}</td>
+      <td><span class="badge badge-green">${staffCount} คน</span></td>
+      <td><span class="badge ${b.active?'badge-green':'badge-gray'}">${b.active?'เปิดรับจอง':'ปิดรับจอง'}</span></td>
+      <td><div class="td-actions">
+        <button class="btn btn-outline btn-sm" onclick="openBranchModal(${b.id})">✏️ แก้ไข</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete('branch',${b.id},'สาขา ${b.name}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function openBranchModal(id=null){
+  document.getElementById('branch-edit-id').value=id||'';
+  if(id){
+    const b=DB.branches.find(x=>x.id===id);
+    document.getElementById('branch-modal-title').textContent='แก้ไขสาขา';
+    document.getElementById('branch-name').value=b.name;
+    document.getElementById('branch-sub').value=b.sub;
+    document.getElementById('branch-line-group').value=b.lineGroup||'';
+    document.getElementById('branch-active').checked=b.active;
+  }else{
+    document.getElementById('branch-modal-title').textContent='เพิ่มสาขา';
+    document.getElementById('branch-name').value='';
+    document.getElementById('branch-sub').value='';
+    document.getElementById('branch-line-group').value='';
+    document.getElementById('branch-active').checked=true;
+  }
+  openModal('modal-branch');
+}
+function saveBranch(){
+  const name=document.getElementById('branch-name').value.trim();
+  if(!name){toast('กรุณากรอกชื่อสาขา');return;}
+  const id=document.getElementById('branch-edit-id').value;
+  const data={name,sub:document.getElementById('branch-sub').value.trim(),lineGroup:document.getElementById('branch-line-group').value.trim(),active:document.getElementById('branch-active').checked};
+  if(id){Object.assign(DB.branches.find(b=>b.id==id),data);}
+  else{DB.branches.push({id:nextId(),...data});}
+  closeModal('modal-branch');renderBranches();toast('✅ บันทึกสาขาแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   STAFFS
+═══════════════════════════════════════════════════ */
+function renderStaffs(){
+  document.getElementById('staffs-tbody').innerHTML=DB.staffs.map(s=>{
+    const branch=DB.branches.find(b=>b.id===s.branch_id);
+    return`<tr>
+      <td><strong>${s.name}</strong></td>
+      <td>${branch?.name||'–'}</td>
+      <td><span class="badge ${s.active?'badge-green':'badge-gray'}">${s.active?'รับงาน':'หยุดงาน'}</span></td>
+      <td><div class="td-actions">
+        <button class="btn btn-outline btn-sm" onclick="openStaffModal(${s.id})">✏️ แก้ไข</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete('staff',${s.id},'${s.name}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function openStaffModal(id=null){
+  const branchOpts=DB.branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  document.getElementById('staff-branch').innerHTML=branchOpts;
+  document.getElementById('staff-edit-id').value=id||'';
+  if(id){
+    const s=DB.staffs.find(x=>x.id===id);
+    document.getElementById('staff-modal-title').textContent='แก้ไขช่าง';
+    document.getElementById('staff-name').value=s.name;
+    document.getElementById('staff-branch').value=s.branch_id;
+    document.getElementById('staff-active').checked=s.active;
+  }else{
+    document.getElementById('staff-modal-title').textContent='เพิ่มช่าง';
+    document.getElementById('staff-name').value='';
+    document.getElementById('staff-active').checked=true;
+  }
+  openModal('modal-staff');
+}
+function saveStaff(){
+  const name=document.getElementById('staff-name').value.trim();
+  if(!name){toast('กรุณากรอกชื่อช่าง');return;}
+  const id=document.getElementById('staff-edit-id').value;
+  const data={name,branch_id:parseInt(document.getElementById('staff-branch').value),active:document.getElementById('staff-active').checked};
+  if(id){Object.assign(DB.staffs.find(s=>s.id==id),data);}
+  else{DB.staffs.push({id:nextId(),...data});}
+  closeModal('modal-staff');renderStaffs();toast('✅ บันทึกข้อมูลช่างแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   SERVICES
+═══════════════════════════════════════════════════ */
+function renderServices(){
+  const sorted=[...DB.services].sort((a,b)=>a.order-b.order);
+  document.getElementById('services-tbody').innerHTML=sorted.map(s=>`<tr>
+    <td style="color:var(--text-mid);font-size:13px">${s.order}</td>
+    <td><strong>${s.name}</strong></td>
+    <td><span class="badge ${s.active?'badge-green':'badge-gray'}">${s.active?'แสดง':'ซ่อน'}</span></td>
+    <td><div class="td-actions">
+      <button class="btn btn-outline btn-sm" onclick="openServiceModal(${s.id})">✏️ แก้ไข</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDelete('service',${s.id},'${s.name}')">🗑️</button>
+    </div></td>
+  </tr>`).join('');
+}
+function openServiceModal(id=null){
+  document.getElementById('service-edit-id').value=id||'';
+  if(id){
+    const s=DB.services.find(x=>x.id===id);
+    document.getElementById('service-modal-title').textContent='แก้ไขบริการ';
+    document.getElementById('service-name').value=s.name;
+    document.getElementById('service-order').value=s.order;
+    document.getElementById('service-active').checked=s.active;
+  }else{
+    document.getElementById('service-modal-title').textContent='เพิ่มบริการ';
+    document.getElementById('service-name').value='';
+    document.getElementById('service-order').value=DB.services.length+1;
+    document.getElementById('service-active').checked=true;
+  }
+  openModal('modal-service');
+}
+function saveService(){
+  const name=document.getElementById('service-name').value.trim();
+  if(!name){toast('กรุณากรอกชื่อบริการ');return;}
+  const id=document.getElementById('service-edit-id').value;
+  const data={name,order:parseInt(document.getElementById('service-order').value)||0,active:document.getElementById('service-active').checked};
+  if(id){Object.assign(DB.services.find(s=>s.id==id),data);}
+  else{DB.services.push({id:nextId(),...data});}
+  closeModal('modal-service');renderServices();toast('✅ บันทึกบริการแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   PRICES  (แยกสาขา)
+═══════════════════════════════════════════════════ */
+let activePriceBranch = 1;
+
+function switchPriceTab(bid){
+  activePriceBranch = bid;
+  document.querySelectorAll('.price-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('ptab-'+bid).classList.add('active');
+  renderPrices();
+}
+
+function renderPrices(){
+  const branchPrices = DB.prices.filter(p=>p.branch_id===activePriceBranch);
+  const cats = [...new Set(branchPrices.map(p=>p.cat))];
+  const branchName = DB.branches.find(b=>b.id===activePriceBranch)?.name || '';
+
+  if(cats.length===0){
+    document.getElementById('prices-list-admin').innerHTML=`
+      <div class="card"><div class="empty-state">
+        <div class="ei">💰</div>
+        <p>ยังไม่มีรายการราคาสำหรับ ${branchName}<br/>กด "+ เพิ่มรายการราคา" เพื่อเริ่มต้น</p>
+      </div></div>`;
+    return;
+  }
+
+  document.getElementById('prices-list-admin').innerHTML = cats.map(cat=>`
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:0">
+        <span class="ct-icon">💰</span>${cat}
+      </div>
+      <div class="table-wrap" style="margin-top:12px"><table>
+        <thead><tr>
+          <th>ชื่อรายการ</th>
+          <th style="text-align:center">✋ มือ</th>
+          <th style="text-align:center">🦶 เท้า</th>
+          <th>จัดการ</th>
+        </tr></thead>
+        <tbody>${branchPrices.filter(p=>p.cat===cat).map(p=>{
+          const isNote = p.name.startsWith('🔸');
+          if(isNote) return `<tr class="price-note-row"><td colspan="4">${p.name}
+            <span style="margin-left:8px;cursor:pointer;opacity:.6" onclick="confirmDelete('price',${p.id},'หมายเหตุ')">🗑️</span>
+          </td></tr>`;
+          return `<tr>
+            <td style="font-size:14px">${p.name}</td>
+            <td class="col-hand" style="text-align:center">${p.hand||'–'}</td>
+            <td class="col-foot" style="text-align:center">${p.foot||'–'}</td>
+            <td><div class="td-actions">
+              <button class="btn btn-outline btn-sm" onclick="openPriceModal(${p.id})">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDelete('price',${p.id},'${p.name.replace(/'/g,'')}')">🗑️</button>
+            </div></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>`).join('');
+}
+
+function openPriceModal(id=null){
+  document.getElementById('price-edit-id').value=id||'';
+  if(id){
+    const p=DB.prices.find(x=>x.id===id);
+    document.getElementById('price-modal-title').textContent='แก้ไขราคา';
+    document.getElementById('price-branch').value=p.branch_id;
+    document.getElementById('price-cat').value=p.cat;
+    document.getElementById('price-name').value=p.name;
+    document.getElementById('price-hand').value=p.hand||'';
+    document.getElementById('price-foot').value=p.foot||'';
+  }else{
+    document.getElementById('price-modal-title').textContent='เพิ่มรายการราคา';
+    document.getElementById('price-branch').value=activePriceBranch;
+    document.getElementById('price-cat').value='';
+    document.getElementById('price-name').value='';
+    document.getElementById('price-hand').value='';
+    document.getElementById('price-foot').value='';
+  }
+  openModal('modal-price');
+}
+
+function savePrice(){
+  const cat=document.getElementById('price-cat').value.trim();
+  const name=document.getElementById('price-name').value.trim();
+  if(!cat||!name){toast('กรุณากรอกหมวดหมู่และชื่อรายการ');return;}
+  const id=document.getElementById('price-edit-id').value;
+  const data={
+    branch_id:parseInt(document.getElementById('price-branch').value),
+    cat, name,
+    hand:document.getElementById('price-hand').value.trim(),
+    foot:document.getElementById('price-foot').value.trim(),
+  };
+  if(id){Object.assign(DB.prices.find(p=>p.id==id),data);}
+  else{DB.prices.push({id:nextId(),...data});}
+  // Switch to the saved branch tab
+  activePriceBranch = data.branch_id;
+  document.querySelectorAll('.price-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('ptab-'+data.branch_id)?.classList.add('active');
+  closeModal('modal-price');renderPrices();toast('✅ บันทึกราคาแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   CONTACT
+═══════════════════════════════════════════════════ */
+function loadContactForm(){
+  const c=DB.contact;
+  document.getElementById('ct-phone').value=c.phone;
+  document.getElementById('ct-line').value=c.line;
+  document.getElementById('ct-fb').value=c.fb;
+  document.getElementById('ct-map').value=c.map;
+  document.getElementById('ct-hours').value=c.hours;
+  document.getElementById('ct-direction').value=c.direction;
+}
+function saveContact(){
+  DB.contact={
+    phone:document.getElementById('ct-phone').value.trim(),
+    line:document.getElementById('ct-line').value.trim(),
+    fb:document.getElementById('ct-fb').value.trim(),
+    map:document.getElementById('ct-map').value.trim(),
+    hours:document.getElementById('ct-hours').value.trim(),
+    direction:document.getElementById('ct-direction').value.trim(),
+  };
+  toast('✅ บันทึกข้อมูลติดต่อแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   LOCK NUMBERS
+═══════════════════════════════════════════════════ */
+function loadLockEditor(){
+  document.getElementById('lock-editor').innerHTML=DB.branches.map((b,i)=>`
+    <div class="card">
+      <div class="card-title"><span class="ct-icon">📍</span>${b.name}</div>
+      <div class="form-group">
+        <label class="form-label">เลขล็อก (คั่นด้วยจุลภาค เช่น 47, 12, 89)</label>
+        <input class="form-input" id="lock-${b.id}" value="${DB.lock.find(l=>l.branch_id===b.id)?.numbers||''}"/>
+      </div>
+    </div>`).join('');
+}
+function saveLockNumbers(){
+  DB.branches.forEach(b=>{
+    const val=document.getElementById('lock-'+b.id)?.value.trim()||'';
+    const existing=DB.lock.find(l=>l.branch_id===b.id);
+    if(existing)existing.numbers=val;
+    else DB.lock.push({branch_id:b.id,numbers:val});
+  });
+  toast('✅ บันทึกเลขล็อกแล้ว ลูกค้าเห็นทันที');
+}
+
+/* ═══════════════════════════════════════════════════
+   QR CODE
+═══════════════════════════════════════════════════ */
+function previewQR(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('qr-preview-img').src=e.target.result;
+    document.getElementById('qr-preview-img').style.display='block';
+    document.getElementById('qr-preview-placeholder').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+function saveQR(){
+  DB.settings.deposit=parseInt(document.getElementById('deposit-amount').value)||100;
+  toast('✅ บันทึก QR Code และมัดจำแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════════ */
+function loadSettingsForm(){
+  document.getElementById('open-time').value=DB.settings.openTime;
+  document.getElementById('close-time').value=DB.settings.closeTime;
+  document.getElementById('pay-timeout').value=DB.settings.payTimeout;
+  document.getElementById('deposit-amount').value=DB.settings.deposit;
+}
+function saveSettings(){
+  DB.settings.openTime=document.getElementById('open-time').value;
+  DB.settings.closeTime=document.getElementById('close-time').value;
+  DB.settings.payTimeout=parseInt(document.getElementById('pay-timeout').value)||15;
+  toast('✅ บันทึกตั้งค่าระบบแล้ว');
+}
+function changePassword(){
+  const cur=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const cf=document.getElementById('pw-confirm').value;
+  const user=ADMIN_USERS.find(u=>u.u===currentUser.u);
+  if(cur!==user.p){toast('❌ รหัสผ่านปัจจุบันไม่ถูกต้อง');return;}
+  if(nw.length<4){toast('❌ รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัว');return;}
+  if(nw!==cf){toast('❌ รหัสผ่านใหม่ไม่ตรงกัน');return;}
+  user.p=nw;
+  document.getElementById('pw-current').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+  toast('✅ เปลี่ยนรหัสผ่านแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   DELETE CONFIRM
+═══════════════════════════════════════════════════ */
+function confirmDelete(type,id,label){
+  document.getElementById('confirm-msg').textContent=`ต้องการลบ "${label}" ใช่ไหม?`;
+  document.getElementById('confirm-ok-btn').onclick=()=>{doDelete(type,id);closeModal('modal-confirm');};
+  openModal('modal-confirm');
+}
+function doDelete(type,id){
+  if(type==='branch'){DB.branches=DB.branches.filter(b=>b.id!==id);renderBranches();}
+  else if(type==='staff'){DB.staffs=DB.staffs.filter(s=>s.id!==id);renderStaffs();}
+  else if(type==='service'){DB.services=DB.services.filter(s=>s.id!==id);renderServices();}
+  else if(type==='price'){DB.prices=DB.prices.filter(p=>p.id!==id);renderPrices();}
+  toast('🗑️ ลบรายการแล้ว');
+}
+
+/* ═══════════════════════════════════════════════════
+   MODAL HELPERS
+═══════════════════════════════════════════════════ */
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('admin-toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
