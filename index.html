@@ -4,980 +4,716 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>103STUDIO — จองคิวออนไลน์</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-  :root{
-    --red:#C0392B; --red-dark:#96281B; --red-light:#FADBD8; --red-xlight:#FEF5F4;
-    --white:#FFFFFF; --off-white:#FDFEFE; --surface:#F8F9FA;
-    --text:#1C2833; --text-mid:#566573; --text-light:#95A5A6;
-    --border:#E8DADF; --border-mid:#D5D8DC;
-    --green:#1E8449; --green-light:#EAFAF1;
-    --yellow:#B7950B; --yellow-light:#FEFDE7;
-    --radius:16px; --radius-sm:10px; --radius-xs:8px;
-    --shadow:0 2px 16px rgba(192,57,43,.08);
-    --shadow-card:0 4px 24px rgba(192,57,43,.12);
-  }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;background:#F8F9FA;font-family:'Noto Sans Thai',sans-serif;color:var(--text);overscroll-behavior:none}
-  body{display:flex;flex-direction:column;align-items:center}
-
-  /* ── APP SHELL ─────────────────────────────── */
-  #app{width:100%;max-width:480px;min-height:100vh;background:var(--white);display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(0,0,0,.08)}
-  .screen{display:none;flex-direction:column;flex:1;animation:fadeUp .28s ease}
-  .screen.active{display:flex}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-
-  /* ── HEADER ─────────────────────────────────── */
-  .top-bar{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);padding:0 16px}
-  .top-bar-inner{display:flex;align-items:center;gap:12px;height:56px}
-  .btn-back{width:36px;height:36px;border:none;background:var(--surface);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-mid);transition:.2s;flex-shrink:0}
-  .btn-back:hover{background:var(--red-light);color:var(--red)}
-  .top-bar h2{font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;color:var(--text);flex:1}
-  .step-tag{font-size:11px;font-weight:500;color:var(--text-light);background:var(--surface);padding:3px 9px;border-radius:20px;white-space:nowrap}
-
-  /* ── PROGRESS BAR ──────────────────────────── */
-  .progress-wrap{padding:10px 16px 0;background:var(--white)}
-  .progress-track{height:3px;background:var(--border);border-radius:4px;overflow:hidden}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--red-dark),var(--red));border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1)}
-  .progress-label{font-size:11px;color:var(--text-light);text-align:right;margin-top:5px;padding-bottom:8px}
-
-  /* ── SCROLL CONTENT ─────────────────────────── */
-  .scroll-content{flex:1;overflow-y:auto;padding:16px 16px 120px;-webkit-overflow-scrolling:touch}
-
-  /* ── BOTTOM ACTION ──────────────────────────── */
-  .bottom-action{position:sticky;bottom:0;background:linear-gradient(to top,var(--white) 82%,transparent);padding:20px 16px 28px;z-index:50}
-  .btn-primary{width:100%;height:54px;background:var(--red);color:var(--white);border:none;border-radius:28px;font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:.2s;letter-spacing:.3px;box-shadow:0 4px 18px rgba(192,57,43,.32)}
-  .btn-primary:hover{background:var(--red-dark);transform:translateY(-1px)}
-  .btn-primary:active{transform:translateY(0);box-shadow:none}
-  .btn-primary:disabled{background:var(--border-mid);color:var(--text-light);box-shadow:none;cursor:not-allowed;transform:none}
-
-  /* ── CARDS ──────────────────────────────────── */
-  .card-grid{display:grid;gap:12px}
-  .card-grid.cols-2{grid-template-columns:1fr 1fr}
-  .sel-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:.2s;background:var(--white);text-align:center}
-  .sel-card:hover{border-color:var(--red-light);background:var(--red-xlight)}
-  .sel-card.selected{border-color:var(--red);background:var(--red-xlight);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
-  .sel-card .card-icon{font-size:28px;margin-bottom:8px}
-  .sel-card .card-title{font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
-  .sel-card .card-sub{font-size:12px;color:var(--text-mid);line-height:1.5}
-  .sel-card.disabled{opacity:.4;pointer-events:none}
-
-  /* ── CALENDAR ──────────────────────────────── */
-  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .cal-header h3{font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;color:var(--text)}
-  .cal-nav{width:36px;height:36px;border:1.5px solid var(--border);border-radius:50%;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-mid);transition:.2s}
-  .cal-nav:hover{border-color:var(--red);color:var(--red)}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-  .cal-dow{height:32px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-light)}
-  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:14px;cursor:pointer;transition:.18s;position:relative}
-  .cal-day:hover:not(.cal-day--past):not(.cal-day--blocked){background:var(--red-light);color:var(--red)}
-  .cal-day--past{color:var(--border-mid);cursor:not-allowed}
-  .cal-day--blocked{color:var(--border-mid);cursor:not-allowed;text-decoration:line-through}
-  .cal-day--selected{background:var(--red)!important;color:var(--white)!important;font-weight:700;box-shadow:0 2px 8px rgba(192,57,43,.4)}
-  .cal-day--today::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;background:var(--red);border-radius:50%}
-  .cal-day--today.cal-day--selected::after{background:var(--white)}
-
-  /* ── TIME SLOTS ─────────────────────────────── */
-  .time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .time-slot{height:46px;border:1.5px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-family:'Prompt',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.2s;color:var(--text)}
-  .time-slot:hover:not(.time-slot--full){border-color:var(--red);color:var(--red);background:var(--red-xlight)}
-  .time-slot--selected{background:var(--red);border-color:var(--red);color:var(--white);box-shadow:0 2px 10px rgba(192,57,43,.3)}
-  .time-slot--full{background:var(--surface);border-color:var(--border-mid);color:var(--border-mid);cursor:not-allowed;font-size:12px}
-
-  /* ── STAFF CARDS ────────────────────────────── */
-  .staff-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:.2s;background:var(--white);display:flex;align-items:center;gap:12px}
-  .staff-card:hover{border-color:var(--red-light);background:var(--red-xlight)}
-  .staff-card.selected{border-color:var(--red);background:var(--red-xlight);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
-  .staff-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--red-light),var(--red));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-  .staff-info .staff-name{font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;color:var(--text)}
-  .staff-info .staff-tag{font-size:12px;color:var(--text-mid);margin-top:2px}
-  .staff-avail{margin-left:auto;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
-  .staff-avail.free{background:var(--green-light);color:var(--green)}
-  .staff-avail.busy{background:var(--border);color:var(--text-light)}
-
-  /* ── SERVICE CHECKS ─────────────────────────── */
-  .svc-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:.2s;background:var(--white);margin-bottom:8px}
-  .svc-item:hover{border-color:var(--red-light);background:var(--red-xlight)}
-  .svc-item.selected{border-color:var(--red);background:var(--red-xlight)}
-  .svc-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
-  .svc-item.selected .svc-check{background:var(--red);border-color:var(--red)}
-  .svc-check svg{opacity:0;transition:.15s}
-  .svc-item.selected .svc-check svg{opacity:1}
-  .svc-name{font-size:15px;font-weight:500;color:var(--text)}
-
-  /* ── FORM INPUTS ────────────────────────────── */
-  .form-group{margin-bottom:16px}
-  .form-label{font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:7px;display:block}
-  .form-label .req{color:var(--red)}
-  .form-input{width:100%;height:52px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 16px;font-family:'Noto Sans Thai',sans-serif;font-size:15px;color:var(--text);background:var(--white);outline:none;transition:.2s}
-  .form-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
-  .form-input::placeholder{color:var(--text-light)}
-  .form-textarea{height:90px;padding:14px 16px;resize:none;line-height:1.5}
-  .form-error{font-size:12px;color:var(--red);margin-top:5px;display:none}
-  .form-group.has-error .form-input{border-color:var(--red)}
-  .form-group.has-error .form-error{display:block}
-
-  /* ── SUMMARY ──────────────────────────────── */
-  .summary-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
-  .summary-header{background:linear-gradient(135deg,var(--red-dark),var(--red));padding:18px 20px;text-align:center}
-  .summary-header h3{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--white);margin-bottom:3px}
-  .summary-header p{font-size:13px;color:rgba(255,255,255,.8)}
-  .summary-body{padding:16px 20px}
-  .summary-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-  .summary-row:last-child{border-bottom:none}
-  .summary-label{font-size:13px;color:var(--text-mid);width:80px;flex-shrink:0;padding-top:1px}
-  .summary-val{font-size:14px;font-weight:500;color:var(--text);flex:1;line-height:1.5}
-  .deposit-badge{background:var(--red-xlight);border:1.5px solid var(--red-light);border-radius:var(--radius-sm);padding:14px 20px;text-align:center;margin-top:8px}
-  .deposit-badge .amount{font-family:'Prompt',sans-serif;font-size:32px;font-weight:700;color:var(--red)}
-  .deposit-badge .label{font-size:13px;color:var(--text-mid);margin-top:3px}
-
-  /* ── QR PAYMENT ─────────────────────────────── */
-  .qr-wrap{text-align:center;padding:20px 0}
-  .qr-box{width:200px;height:200px;border:2px solid var(--border);border-radius:var(--radius);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:var(--white);overflow:hidden;position:relative}
-  .qr-box canvas{width:100%!important;height:100%!important}
-  .timer-badge{display:inline-flex;align-items:center;gap:6px;background:var(--yellow-light);border:1.5px solid #F9E79F;color:var(--yellow);font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;padding:10px 24px;border-radius:28px;margin-bottom:12px}
-  .timer-badge.urgent{background:#FDEDEC;border-color:var(--red-light);color:var(--red)}
-  .pay-inst{font-size:14px;color:var(--text-mid);line-height:1.7}
-  .pay-amount{font-family:'Prompt',sans-serif;font-size:28px;font-weight:700;color:var(--red);margin:6px 0}
-
-  /* ── UPLOAD ──────────────────────────────────── */
-  .upload-zone{border:2px dashed var(--border-mid);border-radius:var(--radius);padding:32px 16px;text-align:center;cursor:pointer;transition:.2s;background:var(--surface)}
-  .upload-zone:hover,.upload-zone.drag{border-color:var(--red);background:var(--red-xlight)}
-  .upload-zone .icon{font-size:40px;margin-bottom:12px}
-  .upload-zone p{font-size:14px;color:var(--text-mid)}
-  .upload-zone strong{color:var(--red)}
-  .upload-preview{border-radius:var(--radius);overflow:hidden;margin-top:16px;border:1.5px solid var(--border);position:relative}
-  .upload-preview img{width:100%;display:block;max-height:240px;object-fit:cover}
-  .upload-preview .remove-btn{position:absolute;top:8px;right:8px;width:28px;height:28px;background:rgba(0,0,0,.6);border:none;border-radius:50%;color:white;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-  #file-input{display:none}
-
-  /* ── SUCCESS ─────────────────────────────────── */
-  .success-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:16px}
-  .success-icon{width:88px;height:88px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:44px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
-  @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
-  .success-wrap h2{font-family:'Prompt',sans-serif;font-size:24px;font-weight:700;color:var(--text)}
-  .success-wrap p{font-size:15px;color:var(--text-mid);line-height:1.7}
-  .booking-ref-badge{background:var(--red-xlight);border:1.5px solid var(--red-light);border-radius:var(--radius-sm);padding:12px 24px;font-family:'Prompt',sans-serif;font-size:20px;font-weight:700;color:var(--red);letter-spacing:1px}
-
-  /* ── HOME SCREEN ────────────────────────────── */
-  .home-hero{background:linear-gradient(160deg,var(--red-dark) 0%,var(--red) 60%,#E74C3C 100%);padding:40px 24px 56px;text-align:center;position:relative;overflow:hidden}
-  .home-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-  .home-logo{font-family:'Prompt',sans-serif;font-size:38px;font-weight:700;color:var(--white);letter-spacing:-1px;position:relative}
-  .home-logo span{font-size:15px;font-weight:300;letter-spacing:4px;display:block;opacity:.85;margin-top:-4px}
-  .home-tagline{font-size:14px;color:rgba(255,255,255,.75);margin-top:8px;position:relative}
-  .home-body{padding:0 16px;margin-top:-24px;position:relative}
-  .home-booking-btn{width:100%;height:60px;background:var(--white);color:var(--red);border:none;border-radius:28px;font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-card);transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
-  .home-booking-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(192,57,43,.25)}
-  .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-  .home-mini-card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
-  .home-mini-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
-  .home-mini-card .mi{font-size:24px}
-  .home-mini-card .mt{font-size:13px;font-weight:600;color:var(--text)}
-  .home-mini-card .ms{font-size:11px;color:var(--text-mid)}
-  .hours-card{background:var(--white);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-top:10px;display:flex;align-items:center;gap:14px}
-  .hours-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0}
-  .hours-card p{font-size:13px;color:var(--text-mid)}
-  .hours-card strong{font-size:15px;font-weight:600;color:var(--text)}
-
-  /* ── MISC ────────────────────────────────────── */
-  .section-title{font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;color:var(--text-mid);margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px}
-  .info-banner{background:var(--red-xlight);border:1px solid var(--red-light);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--red-dark);margin-bottom:16px;display:flex;gap:8px;align-items:flex-start}
-  .badge-status{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px}
-  .badge-status.waiting{background:var(--yellow-light);color:var(--yellow)}
-  .badge-status.confirmed{background:var(--green-light);color:var(--green)}
-
-  /* Price / Contact */
-  .price-cat{font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;color:var(--red);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.8px}
-  .price-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
-  .price-row:last-child{border-bottom:none}
-  .price-name{font-size:14px;color:var(--text)}
-  .price-amt{font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;color:var(--red)}
-
-  .contact-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
-  .contact-item:last-child{border-bottom:none}
-  .contact-icon{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--red-xlight);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-  .contact-info p{font-size:13px;color:var(--text-mid);margin-bottom:2px}
-  .contact-info strong{font-size:15px;font-weight:600;color:var(--text)}
-
-  /* Points */
-  .points-card{background:linear-gradient(135deg,var(--red-dark),var(--red));border-radius:var(--radius);padding:24px;color:var(--white);margin-bottom:16px;text-align:center}
-  .points-card .pts-num{font-family:'Prompt',sans-serif;font-size:52px;font-weight:700;line-height:1}
-  .points-card .pts-label{font-size:13px;opacity:.8;margin-top:4px}
-
-  /* Nav bottom */
-  .bottom-nav{display:flex;background:var(--white);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:200}
-  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 12px;cursor:pointer;transition:.2s;border:none;background:transparent;gap:4px}
-  .nav-item.active .nav-icon{color:var(--red)}
-  .nav-item.active .nav-label{color:var(--red);font-weight:600}
-  .nav-icon{font-size:22px;color:var(--text-light);transition:.2s}
-  .nav-label{font-size:10px;color:var(--text-light)}
-
-  /* ── LIFF / LINE ─────────────────────────────── */
-  #screen-line-gate{position:fixed;inset:0;background:var(--white);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:16px}
-  #screen-line-gate.show{display:flex}
-  .line-gate-icon{width:96px;height:96px;border-radius:50%;background:#06C755;display:flex;align-items:center;justify-content:center;font-size:48px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
-  .liff-loading{position:fixed;inset:0;background:var(--white);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-  .liff-loading.hide{display:none}
-  .liff-spinner{width:44px;height:44px;border:4px solid var(--red-light);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  /* LINE profile chip on home */
-  .line-profile-chip{display:flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid #06C755;border-radius:28px;padding:8px 14px 8px 8px;margin-top:10px}
-  .line-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #06C755}
-  .line-avatar-placeholder{width:36px;height:36px;border-radius:50%;background:#06C755;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-  .line-name{font-size:14px;font-weight:600;color:var(--text);flex:1}
-  .line-badge{font-size:10px;font-weight:700;color:#06C755;background:#EAFAF1;padding:2px 8px;border-radius:20px;border:1px solid #A9DFBF}
-
-  /* Toast */
-  #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--white);padding:10px 22px;border-radius:28px;font-size:14px;opacity:0;transition:.3s;z-index:9999;white-space:nowrap;pointer-events:none}
-  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-  /* ── SAVED PROFILE ──────────────────────────── */
-  .profile-banner{background:linear-gradient(135deg,#fff5f5,var(--red-xlight));border:1.5px solid var(--red-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
-  .profile-banner::before{content:'';position:absolute;right:-10px;top:-10px;width:70px;height:70px;background:rgba(192,57,43,.06);border-radius:50%}
-  .profile-banner:hover{border-color:var(--red);box-shadow:0 2px 12px rgba(192,57,43,.12)}
-  .profile-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 2px 8px rgba(192,57,43,.3)}
-  .profile-info{flex:1;min-width:0}
-  .profile-info .p-name{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px}
-  .profile-info .p-phone{font-size:13px;color:var(--text-mid)}
-  .profile-use-btn{font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;color:var(--red);background:var(--white);border:1.5px solid var(--red-light);padding:6px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0;transition:.2s}
-  .profile-banner:hover .profile-use-btn{background:var(--red);color:var(--white);border-color:var(--red)}
-  .profile-hint{font-size:11px;color:var(--text-light);text-align:center;margin-bottom:12px}
-  .divider-or{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-  .divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
-  .divider-or span{font-size:12px;color:var(--text-light);white-space:nowrap}
-  .profile-chip{display:inline-flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;margin-bottom:6px}
-  .forget-link{font-size:12px;color:var(--text-light);text-decoration:underline;cursor:pointer;border:none;background:none;padding:0;margin-top:4px;display:block}
-  .forget-link:hover{color:var(--red)}
+:root{
+  --red:#C0392B;--red-dark:#96281B;--red-light:#FADBD8;--red-xlight:#FEF5F4;
+  --white:#fff;--surface:#F8F9FA;--text:#1C2833;--text-mid:#566573;--text-light:#95A5A6;
+  --border:#E8DADF;--border-mid:#D5D8DC;
+  --green:#1E8449;--green-light:#EAFAF1;
+  --yellow:#B7950B;--yellow-light:#FEFDE7;
+  --orange:#E67E22;--orange-light:#FEF5E7;
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 2px 16px rgba(192,57,43,.08);
+  --shadow-card:0 4px 24px rgba(192,57,43,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#F8F9FA;font-family:'Noto Sans Thai',sans-serif;color:var(--text);overscroll-behavior:none}
+body{display:flex;flex-direction:column;align-items:center}
+#app{width:100%;max-width:480px;min-height:100vh;background:var(--white);display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(0,0,0,.08)}
+.screen{display:none;flex-direction:column;flex:1;animation:fadeUp .28s ease}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.top-bar{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);padding:0 16px}
+.top-bar-inner{display:flex;align-items:center;gap:12px;height:56px}
+.btn-back{width:36px;height:36px;border:none;background:var(--surface);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-mid);transition:.2s;flex-shrink:0;font-size:18px}
+.btn-back:hover{background:var(--red-light);color:var(--red)}
+.top-bar h2{font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;color:var(--text);flex:1}
+.step-tag{font-size:11px;font-weight:500;color:var(--text-light);background:var(--surface);padding:3px 9px;border-radius:20px;white-space:nowrap}
+.progress-wrap{padding:10px 16px 0;background:var(--white)}
+.progress-track{height:3px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--red-dark),var(--red));border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-label{font-size:11px;color:var(--text-light);text-align:right;margin-top:5px;padding-bottom:8px}
+.scroll-content{flex:1;overflow-y:auto;padding:16px 16px 120px;-webkit-overflow-scrolling:touch}
+.bottom-action{position:sticky;bottom:0;background:linear-gradient(to top,var(--white) 82%,transparent);padding:20px 16px 28px;z-index:50}
+.btn-primary{width:100%;height:54px;background:var(--red);color:var(--white);border:none;border-radius:28px;font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:.2s;letter-spacing:.3px;box-shadow:0 4px 18px rgba(192,57,43,.32)}
+.btn-primary:hover{background:var(--red-dark);transform:translateY(-1px)}
+.btn-primary:disabled{background:var(--border-mid);color:var(--text-light);box-shadow:none;cursor:not-allowed;transform:none}
+.card-grid{display:grid;gap:12px}
+.card-grid.cols-2{grid-template-columns:1fr 1fr}
+.sel-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:.2s;background:var(--white);text-align:center}
+.sel-card:hover{border-color:var(--red-light);background:var(--red-xlight)}
+.sel-card.selected{border-color:var(--red);background:var(--red-xlight);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
+.sel-card .card-icon{font-size:28px;margin-bottom:8px}
+.sel-card .card-title{font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.sel-card .card-sub{font-size:12px;color:var(--text-mid);line-height:1.5}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-header h3{font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;color:var(--text)}
+.cal-nav{width:36px;height:36px;border:1.5px solid var(--border);border-radius:50%;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-mid);transition:.2s}
+.cal-nav:hover{border-color:var(--red);color:var(--red)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{height:32px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-light)}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:14px;cursor:pointer;transition:.18s;position:relative}
+.cal-day:hover:not(.cal-day--past):not(.cal-day--blocked){background:var(--red-light);color:var(--red)}
+.cal-day--past{color:var(--border-mid);cursor:not-allowed}
+.cal-day--blocked{color:var(--border-mid);cursor:not-allowed;text-decoration:line-through}
+.cal-day--selected{background:var(--red)!important;color:var(--white)!important;font-weight:700;box-shadow:0 2px 8px rgba(192,57,43,.4)}
+.cal-day--today::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;background:var(--red);border-radius:50%}
+.cal-day--today.cal-day--selected::after{background:var(--white)}
+.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.time-slot{height:46px;border:1.5px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-family:'Prompt',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.2s;color:var(--text)}
+.time-slot:hover:not(.time-slot--full):not(.time-slot--blocked){border-color:var(--red);color:var(--red);background:var(--red-xlight)}
+.time-slot--selected{background:var(--red);border-color:var(--red);color:var(--white);box-shadow:0 2px 10px rgba(192,57,43,.3)}
+.time-slot--full{background:var(--surface);border-color:var(--border-mid);color:var(--border-mid);cursor:not-allowed;font-size:11px;text-align:center;line-height:1.3}
+.time-slot--blocked{background:#FEF5E7;border-color:#F5CBA7;color:var(--orange);cursor:not-allowed;font-size:11px;text-align:center;line-height:1.3}
+.staff-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:.2s;background:var(--white);display:flex;align-items:center;gap:12px}
+.staff-card:hover{border-color:var(--red-light);background:var(--red-xlight)}
+.staff-card.selected{border-color:var(--red);background:var(--red-xlight);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
+.staff-card.disabled{opacity:.4;cursor:not-allowed}
+.staff-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--red-light),var(--red));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.staff-info .staff-name{font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;color:var(--text)}
+.staff-info .staff-tag{font-size:12px;color:var(--text-mid);margin-top:2px}
+.staff-avail{margin-left:auto;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+.staff-avail.free{background:var(--green-light);color:var(--green)}
+.staff-avail.busy{background:var(--border);color:var(--text-light)}
+.svc-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:.2s;background:var(--white);margin-bottom:8px}
+.svc-item:hover{border-color:var(--red-light);background:var(--red-xlight)}
+.svc-item.selected{border-color:var(--red);background:var(--red-xlight)}
+.svc-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border-mid);display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+.svc-item.selected .svc-check{background:var(--red);border-color:var(--red)}
+.svc-check svg{opacity:0;transition:.15s}
+.svc-item.selected .svc-check svg{opacity:1}
+.svc-name{font-size:15px;font-weight:500;color:var(--text)}
+.form-group{margin-bottom:16px}
+.form-label{font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:7px;display:block}
+.form-label .req{color:var(--red)}
+.form-input{width:100%;height:52px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 16px;font-family:'Noto Sans Thai',sans-serif;font-size:15px;color:var(--text);background:var(--white);outline:none;transition:.2s}
+.form-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
+.form-input::placeholder{color:var(--text-light)}
+.form-textarea{height:90px;padding:14px 16px;resize:none;line-height:1.5}
+.form-error{font-size:12px;color:var(--red);margin-top:5px;display:none}
+.form-group.has-error .form-input{border-color:var(--red)}
+.form-group.has-error .form-error{display:block}
+.summary-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.summary-header{background:linear-gradient(135deg,var(--red-dark),var(--red));padding:18px 20px;text-align:center}
+.summary-header h3{font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;color:var(--white);margin-bottom:3px}
+.summary-header p{font-size:13px;color:rgba(255,255,255,.8)}
+.summary-body{padding:16px 20px}
+.summary-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.summary-row:last-child{border-bottom:none}
+.summary-label{font-size:13px;color:var(--text-mid);width:80px;flex-shrink:0;padding-top:1px}
+.summary-val{font-size:14px;font-weight:500;color:var(--text);flex:1;line-height:1.5}
+.deposit-badge{background:var(--red-xlight);border:1.5px solid var(--red-light);border-radius:var(--radius-sm);padding:14px 20px;text-align:center;margin-top:8px}
+.deposit-badge .amount{font-family:'Prompt',sans-serif;font-size:32px;font-weight:700;color:var(--red)}
+.deposit-badge .label{font-size:13px;color:var(--text-mid);margin-top:3px}
+.qr-wrap{text-align:center;padding:20px 0}
+.qr-box{width:200px;height:200px;border:2px solid var(--border);border-radius:var(--radius);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:var(--white);overflow:hidden}
+.qr-box canvas{width:100%!important;height:100%!important}
+.timer-badge{display:inline-flex;align-items:center;gap:6px;background:var(--yellow-light);border:1.5px solid #F9E79F;color:var(--yellow);font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;padding:10px 24px;border-radius:28px;margin-bottom:12px}
+.timer-badge.urgent{background:#FDEDEC;border-color:var(--red-light);color:var(--red)}
+.pay-inst{font-size:14px;color:var(--text-mid);line-height:1.7}
+.pay-amount{font-family:'Prompt',sans-serif;font-size:28px;font-weight:700;color:var(--red);margin:6px 0}
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border-mid);border-radius:var(--radius);padding:32px 16px;text-align:center;cursor:pointer;transition:.2s;background:var(--surface);position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--red);background:var(--red-xlight)}
+.upload-zone .icon{font-size:40px;margin-bottom:12px}
+.upload-zone p{font-size:14px;color:var(--text-mid)}
+.upload-zone strong{color:var(--red)}
+.upload-preview{border-radius:var(--radius);overflow:hidden;margin-top:16px;border:1.5px solid var(--border);position:relative}
+.upload-preview img{width:100%;display:block;max-height:280px;object-fit:contain;background:var(--surface)}
+.upload-preview .remove-btn{position:absolute;top:8px;right:8px;width:32px;height:32px;background:rgba(0,0,0,.6);border:none;border-radius:50%;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.upload-preview .file-info{background:rgba(0,0,0,.5);color:#fff;font-size:11px;padding:6px 12px;text-align:center}
+#file-input{display:none}
+/* SUCCESS */
+.success-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:16px}
+.success-icon{width:88px;height:88px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:44px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.success-wrap h2{font-family:'Prompt',sans-serif;font-size:24px;font-weight:700;color:var(--text)}
+.success-wrap p{font-size:15px;color:var(--text-mid);line-height:1.7}
+.booking-ref-badge{background:var(--red-xlight);border:1.5px solid var(--red-light);border-radius:var(--radius-sm);padding:12px 24px;font-family:'Prompt',sans-serif;font-size:20px;font-weight:700;color:var(--red);letter-spacing:1px}
+/* HOME */
+.home-hero{background:linear-gradient(160deg,var(--red-dark) 0%,var(--red) 60%,#E74C3C 100%);padding:40px 24px 56px;text-align:center;position:relative;overflow:hidden}
+.home-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.home-logo{font-family:'Prompt',sans-serif;font-size:38px;font-weight:700;color:var(--white);letter-spacing:-1px;position:relative}
+.home-logo span{font-size:15px;font-weight:300;letter-spacing:4px;display:block;opacity:.85;margin-top:-4px}
+.home-body{padding:0 16px;margin-top:-24px;position:relative}
+.home-booking-btn{width:100%;height:60px;background:var(--white);color:var(--red);border:none;border-radius:28px;font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-card);transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.home-booking-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(192,57,43,.25)}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.home-mini-card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.home-mini-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
+.home-mini-card .mi{font-size:24px}
+.home-mini-card .mt{font-size:13px;font-weight:600;color:var(--text)}
+.home-mini-card .ms{font-size:11px;color:var(--text-mid)}
+.hours-card{background:var(--white);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-top:10px;display:flex;align-items:center;gap:14px}
+.hours-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0}
+.hours-card p{font-size:13px;color:var(--text-mid)}
+.hours-card strong{font-size:15px;font-weight:600;color:var(--text)}
+.section-title{font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;color:var(--text-mid);margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px}
+.info-banner{background:var(--red-xlight);border:1px solid var(--red-light);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--red-dark);margin-bottom:16px;display:flex;gap:8px;align-items:flex-start}
+.badge-status{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px}
+.badge-status.waiting{background:var(--yellow-light);color:var(--yellow)}
+.badge-status.confirmed{background:var(--green-light);color:var(--green)}
+/* Price rows */
+.price-cat{font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;color:var(--red);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.8px}
+.contact-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.contact-item:last-child{border-bottom:none}
+.contact-icon{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--red-xlight);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.contact-info p{font-size:13px;color:var(--text-mid);margin-bottom:2px}
+.contact-info strong{font-size:15px;font-weight:600;color:var(--text)}
+.points-card{background:linear-gradient(135deg,var(--red-dark),var(--red));border-radius:var(--radius);padding:24px;color:var(--white);margin-bottom:16px;text-align:center}
+.points-card .pts-num{font-family:'Prompt',sans-serif;font-size:52px;font-weight:700;line-height:1}
+.points-card .pts-label{font-size:13px;opacity:.8;margin-top:4px}
+.bottom-nav{display:flex;background:var(--white);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:200}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 12px;cursor:pointer;transition:.2s;border:none;background:transparent;gap:4px}
+.nav-item.active .nav-icon{color:var(--red)}
+.nav-item.active .nav-label{color:var(--red);font-weight:600}
+.nav-icon{font-size:22px;color:var(--text-light)}
+.nav-label{font-size:10px;color:var(--text-light)}
+/* LINE Profile */
+.line-profile-chip{display:flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid #06C755;border-radius:28px;padding:8px 14px 8px 8px;margin-top:16px;position:relative;z-index:1}
+.line-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #06C755}
+.line-avatar-placeholder{width:36px;height:36px;border-radius:50%;background:#06C755;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.line-name{font-size:14px;font-weight:600;color:var(--text);flex:1}
+.line-badge{font-size:10px;font-weight:700;color:#06C755;background:#EAFAF1;padding:2px 8px;border-radius:20px;border:1px solid #A9DFBF}
+/* Profile Banner */
+.profile-banner{background:linear-gradient(135deg,#fff5f5,var(--red-xlight));border:1.5px solid var(--red-light);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s}
+.profile-banner:hover{border-color:var(--red)}
+.profile-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.profile-info .p-name{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px}
+.profile-info .p-phone{font-size:13px;color:var(--text-mid)}
+.profile-use-btn{font-size:12px;font-weight:600;color:var(--red);background:var(--white);border:1.5px solid var(--red-light);padding:6px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.profile-chip{display:inline-flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;margin-bottom:6px}
+.divider-or{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider-or span{font-size:12px;color:var(--text-light)}
+.forget-link{font-size:12px;color:var(--text-light);text-decoration:underline;cursor:pointer;border:none;background:none;padding:0;margin-top:4px}
+/* LIFF */
+#screen-line-gate{position:fixed;inset:0;background:var(--white);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:16px}
+#screen-line-gate.show{display:flex}
+.liff-loading{position:fixed;inset:0;background:var(--white);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.liff-loading.hide{display:none}
+.liff-spinner{width:44px;height:44px;border:4px solid var(--red-light);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* SLIP STATUS */
+.slip-status-box{border-radius:var(--radius);padding:16px 18px;margin-top:12px;display:flex;align-items:flex-start;gap:12px}
+.slip-status-box.success{background:var(--green-light);border:1.5px solid #A9DFBF}
+.slip-status-box.pending{background:var(--orange-light);border:1.5px solid #F5CBA7}
+/* BKPRICE TAB */
+.bk-price-tab{height:38px;padding:0 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:13px;font-weight:500;color:var(--text-mid);cursor:pointer;transition:.2s;font-family:'Noto Sans Thai',sans-serif}
+.bk-tab-active{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;font-weight:700!important}
+/* Toast */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--white);padding:10px 22px;border-radius:28px;font-size:14px;opacity:0;transition:.3s;z-index:9999;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ══ SCREEN: HOME ══════════════════════════════ -->
-  <div class="screen active" id="screen-home">
-    <div class="home-hero">
-      <div class="home-logo">103STUDIO<span>NAIL SALON</span></div>
-      <p class="home-tagline">ความสวยงามที่คุณไว้วางใจ · 2 สาขา</p>
-      <!-- LINE Profile Chip -->
-      <div id="line-profile-chip" class="line-profile-chip" style="display:none;margin-top:16px;position:relative;z-index:1">
-        <img id="line-avatar-img" class="line-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('line-avatar-fallback').style.display='flex'"/>
-        <div id="line-avatar-fallback" class="line-avatar-placeholder" style="display:none">👤</div>
-        <span class="line-name" id="line-display-name">LINE User</span>
-        <span class="line-badge">LINE ✓</span>
-      </div>
-    </div>
-    <div class="home-body">
-      <button class="home-booking-btn" onclick="startBooking()">
-        <span>💅</span> จองคิวออนไลน์
-      </button>
-      <div class="home-grid">
-        <div class="home-mini-card" onclick="showScreen('screen-prices')">
-          <span class="mi">💰</span>
-          <span class="mt">ราคาบริการ</span>
-          <span class="ms">ดูราคาทั้งหมด</span>
-        </div>
-        <div class="home-mini-card" onclick="showScreen('screen-contact')">
-          <span class="mi">📞</span>
-          <span class="mt">ติดต่อร้าน</span>
-          <span class="ms">สาขาและช่องทาง</span>
-        </div>
-        <div class="home-mini-card" onclick="showScreen('screen-lock')">
-          <span class="mi">🔒</span>
-          <span class="mt">เลขล็อกวันนี้</span>
-          <span class="ms">อัปเดทล่าสุด</span>
-        </div>
-        <div class="home-mini-card" onclick="showScreen('screen-points')">
-          <span class="mi">⭐</span>
-          <span class="mt">สะสมแต้ม</span>
-          <span class="ms">เช็กแต้มของคุณ</span>
-        </div>
-      </div>
-      <div class="hours-card">
-        <div class="hours-dot"></div>
-        <div>
-          <p>เวลาเปิดทำการทุกวัน</p>
-          <strong>11:30 – 21:30 น.</strong>
-        </div>
-      </div>
-      <!-- Returning customer greeting -->
-      <div id="home-profile-card" style="display:none;margin-top:10px;background:var(--white);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);border:1.5px solid var(--border)">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👤</div>
-          <div style="flex:1">
-            <div style="font-size:11px;color:var(--text-mid)">ยินดีต้อนรับกลับ 💅</div>
-            <div style="font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--text)" id="home-profile-name"></div>
-          </div>
-          <button class="forget-link" onclick="forgetProfile()" style="font-size:11px">ลืมข้อมูล</button>
-        </div>
-      </div>
-    </div>
-    <div style="height:20px"></div>
-    <nav class="bottom-nav">
-      <button class="nav-item active" onclick="showScreen('screen-home')"><span class="nav-icon">🏠</span><span class="nav-label">หน้าแรก</span></button>
-      <button class="nav-item" onclick="startBooking()"><span class="nav-icon">📅</span><span class="nav-label">จองคิว</span></button>
-      <button class="nav-item" onclick="showScreen('screen-prices')"><span class="nav-icon">💰</span><span class="nav-label">ราคา</span></button>
-      <button class="nav-item" onclick="showScreen('screen-contact')"><span class="nav-icon">📞</span><span class="nav-label">ติดต่อ</span></button>
-    </nav>
-  </div>
-
-  <!-- ══ SCREEN: STEP 1 — เลือกสาขา ════════════ -->
-  <div class="screen" id="screen-branch">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-home')">←</button>
-        <h2>เลือกสาขา</h2>
-        <span class="step-tag">1 / 9</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:11%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 1 จาก 9</div></div>
-    </div>
-    <div class="scroll-content">
-      <p class="section-title">เลือกสาขาที่ต้องการ</p>
-      <div class="card-grid" id="branch-cards"></div>
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" id="btn-branch-next" disabled onclick="goStep2()">ถัดไป →</button>
+<!-- ══ HOME ══ -->
+<div class="screen active" id="screen-home">
+  <div class="home-hero">
+    <div class="home-logo">103STUDIO<span>NAIL SALON</span></div>
+    <p style="font-size:14px;color:rgba(255,255,255,.75);margin-top:8px;position:relative">ความสวยงามที่คุณไว้วางใจ · 2 สาขา</p>
+    <div id="line-profile-chip" class="line-profile-chip" style="display:none">
+      <img id="line-avatar-img" class="line-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('line-avatar-fallback').style.display='flex'"/>
+      <div id="line-avatar-fallback" class="line-avatar-placeholder" style="display:none">👤</div>
+      <span class="line-name" id="line-display-name">LINE User</span>
+      <span class="line-badge">LINE ✓</span>
     </div>
   </div>
+  <div class="home-body">
+    <button class="home-booking-btn" onclick="startBooking()"><span>💅</span> จองคิวออนไลน์</button>
+    <div class="home-grid">
+      <div class="home-mini-card" onclick="showScreen('screen-prices')"><span class="mi">💰</span><span class="mt">ราคาบริการ</span><span class="ms">ดูราคาทั้งหมด</span></div>
+      <div class="home-mini-card" onclick="showScreen('screen-contact')"><span class="mi">📞</span><span class="mt">ติดต่อร้าน</span><span class="ms">สาขาและช่องทาง</span></div>
+      <div class="home-mini-card" onclick="showScreen('screen-lock')"><span class="mi">🔒</span><span class="mt">เลขล็อกวันนี้</span><span class="ms">อัปเดทล่าสุด</span></div>
+      <div class="home-mini-card" onclick="showScreen('screen-points')"><span class="mi">⭐</span><span class="mt">สะสมแต้ม</span><span class="ms">เช็กแต้มของคุณ</span></div>
+    </div>
+    <div class="hours-card"><div class="hours-dot"></div><div><p>เวลาเปิดทำการทุกวัน</p><strong>11:30 – 21:30 น.</strong></div></div>
+    <div id="home-profile-card" style="display:none;margin-top:10px;background:var(--white);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);border:1.5px solid var(--border)"></div>
+  </div>
+  <div style="height:20px"></div>
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="showScreen('screen-home')"><span class="nav-icon">🏠</span><span class="nav-label">หน้าแรก</span></button>
+    <button class="nav-item" onclick="startBooking()"><span class="nav-icon">📅</span><span class="nav-label">จองคิว</span></button>
+    <button class="nav-item" onclick="showScreen('screen-prices')"><span class="nav-icon">💰</span><span class="nav-label">ราคา</span></button>
+    <button class="nav-item" onclick="showScreen('screen-contact')"><span class="nav-icon">📞</span><span class="nav-label">ติดต่อ</span></button>
+  </nav>
+</div>
 
-  <!-- ══ SCREEN: STEP 2 — เลือกวันที่ ══════════ -->
-  <div class="screen" id="screen-date">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-branch')">←</button>
-        <h2>เลือกวันที่</h2>
-        <span class="step-tag">2 / 9</span>
+<!-- ══ STEP 1: BRANCH ══ -->
+<div class="screen" id="screen-branch">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-home')">←</button><h2>เลือกสาขา</h2><span class="step-tag">1 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:11%"></div></div><div class="progress-label">ขั้นตอนที่ 1 จาก 9</div></div></div>
+  <div class="scroll-content"><p class="section-title">เลือกสาขาที่ต้องการ</p><div class="card-grid" id="branch-cards"></div></div>
+  <div class="bottom-action"><button class="btn-primary" id="btn-branch-next" disabled onclick="goStep2()">ถัดไป →</button></div>
+</div>
+
+<!-- ══ STEP 2: DATE ══ -->
+<div class="screen" id="screen-date">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-branch')">←</button><h2>เลือกวันที่</h2><span class="step-tag">2 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:22%"></div></div><div class="progress-label">ขั้นตอนที่ 2 จาก 9</div></div></div>
+  <div class="scroll-content">
+    <div class="cal-header"><button class="cal-nav" onclick="calPrev()">‹</button><h3 id="cal-month-label"></h3><button class="cal-nav" onclick="calNext()">›</button></div>
+    <div class="cal-grid" id="cal-dow"></div>
+    <div class="cal-grid" id="cal-days" style="margin-top:4px"></div>
+  </div>
+  <div class="bottom-action"><button class="btn-primary" id="btn-date-next" disabled onclick="goStep3()">ถัดไป →</button></div>
+</div>
+
+<!-- ══ STEP 3: TIME ══ -->
+<div class="screen" id="screen-time">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-date')">←</button><h2>เลือกเวลา</h2><span class="step-tag">3 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:33%"></div></div><div class="progress-label">ขั้นตอนที่ 3 จาก 9</div></div></div>
+  <div class="scroll-content">
+    <div class="info-banner">📅 <span id="selected-date-label"></span></div>
+    <div style="background:var(--orange-light);border:1px solid #F5CBA7;border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--orange);margin-bottom:14px">⏱ ระบบกันคิวชน — ต้องห่างจากคิวเดิมอย่างน้อย <strong>40 นาที</strong></div>
+    <p class="section-title">เลือกช่วงเวลา</p>
+    <div class="time-grid" id="time-slots"></div>
+  </div>
+  <div class="bottom-action"><button class="btn-primary" id="btn-time-next" disabled onclick="goStep4()">ถัดไป →</button></div>
+</div>
+
+<!-- ══ STEP 4: STAFF ══ -->
+<div class="screen" id="screen-staff">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-time')">←</button><h2>เลือกช่าง</h2><span class="step-tag">4 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:44%"></div></div><div class="progress-label">ขั้นตอนที่ 4 จาก 9</div></div></div>
+  <div class="scroll-content">
+    <div class="info-banner">✨ <span id="staff-info-label"></span></div>
+    <div id="staff-cards" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+  <div class="bottom-action"><button class="btn-primary" id="btn-staff-next" disabled onclick="goStep5()">ถัดไป →</button></div>
+</div>
+
+<!-- ══ STEP 5: SERVICE ══ -->
+<div class="screen" id="screen-service">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-staff')">←</button><h2>เลือกบริการ</h2><span class="step-tag">5 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:55%"></div></div><div class="progress-label">ขั้นตอนที่ 5 จาก 9</div></div></div>
+  <div class="scroll-content"><p class="section-title">เลือกได้หลายรายการ</p><div id="service-list"></div></div>
+  <div class="bottom-action"><button class="btn-primary" id="btn-svc-next" disabled onclick="goStep6()">ถัดไป →</button></div>
+</div>
+
+<!-- ══ STEP 6: INFO ══ -->
+<div class="screen" id="screen-info">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-service')">←</button><h2>ข้อมูลของคุณ</h2><span class="step-tag">6 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:66%"></div></div><div class="progress-label">ขั้นตอนที่ 6 จาก 9</div></div></div>
+  <div class="scroll-content">
+    <div id="saved-profile-section" style="display:none">
+      <div class="profile-chip">✓ จดจำข้อมูลไว้แล้ว</div>
+      <div class="profile-banner" onclick="useProfile()">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-info"><div class="p-name" id="profile-display-name"></div><div class="p-phone" id="profile-display-phone"></div></div>
+        <div class="profile-use-btn">ใช้ข้อมูลนี้</div>
       </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:22%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 2 จาก 9</div></div>
+      <p style="font-size:12px;color:var(--text-light);text-align:center;margin-bottom:12px">หรือกรอกข้อมูลใหม่ด้านล่าง</p>
+      <div class="divider-or"><span>กรอกข้อมูลอื่น</span></div>
     </div>
-    <div class="scroll-content">
-      <div class="cal-header">
-        <button class="cal-nav" onclick="calPrev()">‹</button>
-        <h3 id="cal-month-label"></h3>
-        <button class="cal-nav" onclick="calNext()">›</button>
-      </div>
-      <div class="cal-grid" id="cal-dow"></div>
-      <div class="cal-grid" id="cal-days" style="margin-top:4px"></div>
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" id="btn-date-next" disabled onclick="goStep3()">ถัดไป →</button>
+    <div class="form-group" id="fg-name"><label class="form-label">ชื่อเล่น <span class="req">*</span></label><input class="form-input" id="inp-name" type="text" placeholder="เช่น นุ้ย, ปุ้ย" oninput="validateInfo()"/><div class="form-error">กรุณากรอกชื่อเล่น</div></div>
+    <div class="form-group" id="fg-phone"><label class="form-label">เบอร์โทรศัพท์ <span class="req">*</span></label><input class="form-input" id="inp-phone" type="tel" placeholder="0812345678" maxlength="10" oninput="validateInfo()"/><div class="form-error">กรุณากรอกเบอร์โทรให้ถูกต้อง (10 หลัก)</div></div>
+    <div class="form-group"><label class="form-label">LINE ID <span style="font-weight:400;color:var(--text-light)">(ถ้ามี)</span></label><input class="form-input" id="inp-line" type="text" placeholder="@yourlineid"/></div>
+    <div class="form-group"><label class="form-label">หมายเหตุเพิ่มเติม <span style="font-weight:400;color:var(--text-light)">(ถ้ามี)</span></label><textarea class="form-input form-textarea" id="inp-note" placeholder="เช่น ต้องการสีขาว, เล็บสั้น..."></textarea></div>
+    <div id="save-profile-wrap" style="display:none;margin-top:4px;margin-bottom:8px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 14px;background:var(--red-xlight);border:1.5px solid var(--red-light);border-radius:var(--radius-sm)">
+        <input type="checkbox" id="chk-save" checked style="accent-color:var(--red);width:18px;height:18px"/>
+        <span style="font-size:14px;color:var(--text)">จดจำข้อมูลนี้สำหรับการจองครั้งหน้า</span>
+        <span style="margin-left:auto;font-size:18px">💾</span>
+      </label>
     </div>
   </div>
+  <div class="bottom-action"><button class="btn-primary" id="btn-info-next" disabled onclick="goStep7()">ถัดไป →</button></div>
+</div>
 
-  <!-- ══ SCREEN: STEP 3 — เลือกเวลา ════════════ -->
-  <div class="screen" id="screen-time">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-date')">←</button>
-        <h2>เลือกเวลา</h2>
-        <span class="step-tag">3 / 9</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:33%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 3 จาก 9</div></div>
+<!-- ══ STEP 7: SUMMARY ══ -->
+<div class="screen" id="screen-summary">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-info')">←</button><h2>สรุปรายการจอง</h2><span class="step-tag">7 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:77%"></div></div><div class="progress-label">ขั้นตอนที่ 7 จาก 9</div></div></div>
+  <div class="scroll-content">
+    <div class="summary-card">
+      <div class="summary-header"><h3>💅 103STUDIO Nail Salon</h3><p id="sum-ref">กรุณาตรวจสอบข้อมูลก่อนยืนยัน</p></div>
+      <div class="summary-body" id="summary-body"></div>
     </div>
-    <div class="scroll-content">
-      <div class="info-banner">
-        📅 <span id="selected-date-label"></span>
-      </div>
-      <p class="section-title">เลือกช่วงเวลา</p>
-      <div class="time-grid" id="time-slots"></div>
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" id="btn-time-next" disabled onclick="goStep4()">ถัดไป →</button>
+    <div class="deposit-badge"><div class="amount">฿100</div><div class="label">ยอดมัดจำที่ต้องชำระ</div></div>
+  </div>
+  <div class="bottom-action"><button class="btn-primary" onclick="goStep8()">ยืนยันการจอง ✓</button></div>
+</div>
+
+<!-- ══ STEP 8: PAYMENT ══ -->
+<div class="screen" id="screen-payment">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-summary')">←</button><h2>ชำระมัดจำ</h2><span class="step-tag">8 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:88%"></div></div><div class="progress-label">ขั้นตอนที่ 8 จาก 9</div></div></div>
+  <div class="scroll-content">
+    <div class="qr-wrap">
+      <div id="timer-display" class="timer-badge">⏱ <span id="timer-text">15:00</span></div>
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px">กรุณาโอนเงินภายในเวลาที่กำหนด</p>
+      <div class="qr-box"><canvas id="qr-canvas"></canvas></div>
+      <div class="pay-amount">฿100</div>
+      <p class="pay-inst">สแกน QR ด้วยแอปธนาคารหรือ<br/><strong>กรุงไทย NEXT · SCB Easy · K PLUS</strong><br/>หรือแอปที่รองรับ PromptPay</p>
     </div>
   </div>
+  <div class="bottom-action"><button class="btn-primary" onclick="goStep9()">แนบสลิปการโอน →</button></div>
+</div>
 
-  <!-- ══ SCREEN: STEP 4 — เลือกช่าง ════════════ -->
-  <div class="screen" id="screen-staff">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-time')">←</button>
-        <h2>เลือกช่าง</h2>
-        <span class="step-tag">4 / 9</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:44%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 4 จาก 9</div></div>
+<!-- ══ STEP 9: SLIP UPLOAD ══ -->
+<div class="screen" id="screen-slip">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-payment')">←</button><h2>แนบสลิปการโอน</h2><span class="step-tag">9 / 9</span></div>
+  <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:100%"></div></div><div class="progress-label">ขั้นตอนสุดท้าย</div></div></div>
+  <div class="scroll-content">
+    <p class="section-title">อัปโหลดหลักฐานการโอนเงิน</p>
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div class="icon">📎</div>
+      <p><strong>แตะเพื่อเลือกรูปสลิป</strong></p>
+      <p style="font-size:12px;margin-top:4px">รองรับ JPG, PNG, WEBP • ขนาดสูงสุด 10MB</p>
     </div>
-    <div class="scroll-content">
-      <div class="info-banner">
-        ✨ <span id="staff-info-label"></span>
-      </div>
-      <div id="staff-cards" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="upload-preview" id="slip-preview" style="display:none">
+      <img id="slip-img" src="" alt="สลิป"/>
+      <div class="file-info" id="slip-file-info"></div>
+      <button class="remove-btn" onclick="removeSlip()">✕</button>
     </div>
-    <div class="bottom-action">
-      <button class="btn-primary" id="btn-staff-next" disabled onclick="goStep5()">ถัดไป →</button>
+    <input type="file" id="file-input" accept="image/jpeg,image/jpg,image/png,image/webp" onchange="handleSlipUpload(this)"/>
+    <!-- Upload progress -->
+    <div id="upload-progress-wrap" style="display:none;margin-top:16px">
+      <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden">
+        <div id="upload-progress-bar" style="height:100%;background:var(--red);border-radius:4px;width:0%;transition:width .3s"></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-mid);text-align:center;margin-top:8px" id="upload-progress-text">กำลังอัปโหลด...</p>
+    </div>
+    <!-- Conflict warning -->
+    <div id="conflict-warning" style="display:none;margin-top:12px;background:#FDEDEC;border:1.5px solid var(--red-light);border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--red-dark)"></div>
+  </div>
+  <div class="bottom-action"><button class="btn-primary" id="btn-submit-slip" disabled onclick="submitSlip()">ส่งสลิป ✓</button></div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div class="screen" id="screen-success">
+  <div class="top-bar"><div class="top-bar-inner"><h2>การจองสำเร็จ</h2></div></div>
+  <div class="success-wrap">
+    <div class="success-icon">✅</div>
+    <h2>ส่งสลิปเรียบร้อยแล้วค่ะ!</h2>
+    <div class="booking-ref-badge" id="success-ref"></div>
+    <p>กรุณารอแอดมินตรวจสอบ<br/>และยืนยันคิวสักครู่นะคะ 🙏</p>
+    <div style="background:var(--yellow-light);border:1px solid #F9E79F;border-radius:var(--radius-sm);padding:14px 18px;width:100%;text-align:center">
+      <span class="badge-status waiting">⏳ รอยืนยันคิว</span>
+      <p style="font-size:12px;color:var(--text-mid);margin-top:8px">ระบบจะแจ้งยืนยันผ่าน LINE</p>
+    </div>
+    <div id="success-summary" style="background:var(--surface);border-radius:var(--radius);padding:16px 20px;width:100%"></div>
+    <div style="width:100%;background:var(--white);border:1.5px solid #06C755;border-radius:var(--radius);overflow:hidden">
+      <div style="background:#06C755;padding:10px 16px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">💬</span>
+        <span style="font-family:'Prompt',sans-serif;font-size:13px;font-weight:700;color:var(--white)">ข้อความสำหรับแอดมินส่ง LINE ยืนยันคิว</span>
+      </div>
+      <div style="padding:14px 16px">
+        <div id="line-msg-box" style="background:#F0F9F1;border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--text);line-height:2;white-space:pre-wrap;font-family:'Noto Sans Thai',sans-serif;border:1px solid #C8EFD0"></div>
+        <button onclick="copyLineMsg()" id="copy-btn" style="margin-top:12px;width:100%;height:46px;background:#06C755;color:var(--white);border:none;border-radius:24px;font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+          <span>📋</span> คัดลอกข้อความ
+        </button>
+      </div>
+    </div>
+    <button class="btn-primary" style="margin-top:4px" onclick="goHome()">กลับหน้าแรก</button>
+  </div>
+</div>
+
+<!-- ══ PRICES ══ -->
+<div class="screen" id="screen-prices">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-home')">←</button><h2>ราคาบริการ</h2></div></div>
+  <div class="scroll-content"><div id="price-list"></div></div>
+  <div class="bottom-action" style="padding-bottom:20px"><button class="btn-primary" onclick="startBooking()">💅 จองคิวเลย</button></div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div class="screen" id="screen-contact">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-home')">←</button><h2>ติดต่อร้าน</h2></div></div>
+  <div class="scroll-content">
+    <div style="background:var(--red-xlight);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:20px">
+      <div style="font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;color:var(--red)">103STUDIO</div>
+      <div style="font-size:13px;color:var(--text-mid)">NAIL SALON · 2 สาขา</div>
+    </div>
+    <div id="contact-list"></div>
+  </div>
+</div>
+
+<!-- ══ LOCK ══ -->
+<div class="screen" id="screen-lock">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-home')">←</button><h2>เลขล็อกวันนี้</h2></div></div>
+  <div class="scroll-content">
+    <div style="text-align:center;padding:12px 0 24px">
+      <div id="lock-date-label" style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:20px"></div>
+      <div id="lock-cards" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div style="margin-top:24px;font-size:12px;color:var(--text-light);line-height:1.8">* เลขล็อกเป็นการแนะนำจากทีมงาน<br/>ไม่ใช่การการันตีผลใดๆ</div>
     </div>
   </div>
+</div>
 
-  <!-- ══ SCREEN: STEP 5 — เลือกบริการ ═══════════ -->
-  <div class="screen" id="screen-service">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-staff')">←</button>
-        <h2>เลือกบริการ</h2>
-        <span class="step-tag">5 / 9</span>
+<!-- ══ POINTS ══ -->
+<div class="screen" id="screen-points">
+  <div class="top-bar"><div class="top-bar-inner"><button class="btn-back" onclick="showScreen('screen-home')">←</button><h2>สะสมแต้ม</h2></div></div>
+  <div class="scroll-content">
+    <div id="points-lookup" style="display:block">
+      <div style="text-align:center;padding:20px 0 16px"><div style="font-size:32px;margin-bottom:10px">⭐</div><p style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">ตรวจสอบแต้มสะสม</p><p style="font-size:13px;color:var(--text-mid)">กรอกเบอร์โทรเพื่อดูแต้มของคุณ</p></div>
+      <div class="form-group"><label class="form-label">เบอร์โทรศัพท์</label><input class="form-input" id="pts-phone" type="tel" placeholder="0812345678" maxlength="10"/></div>
+      <button class="btn-primary" onclick="lookupPoints()">ตรวจสอบแต้ม</button>
+    </div>
+    <div id="points-result" style="display:none;margin-top:16px">
+      <div class="points-card"><div class="pts-num" id="pts-count">0</div><div class="pts-label">แต้มสะสมทั้งหมด</div></div>
+      <div style="background:var(--surface);border-radius:var(--radius);padding:16px">
+        <p class="section-title" style="margin-bottom:10px">วิธีสะสมแต้ม</p>
+        <div style="font-size:13px;color:var(--text-mid);line-height:2">📸 ถ่ายรูปสลิปบริการ แล้วส่งให้แอดมิน<br/>⭐ ทุก 1 บริการ = 1 แต้ม<br/>🎁 ครบ 10 แต้ม รับส่วนลดพิเศษ</div>
       </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:55%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 5 จาก 9</div></div>
-    </div>
-    <div class="scroll-content">
-      <p class="section-title">เลือกได้หลายรายการ</p>
-      <div id="service-list"></div>
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" id="btn-svc-next" disabled onclick="goStep6()">ถัดไป →</button>
+      <button class="btn-primary" style="margin-top:12px;background:var(--surface);color:var(--red);box-shadow:none;border:1.5px solid var(--red)" onclick="document.getElementById('points-result').style.display='none';document.getElementById('points-lookup').style.display='block'">ตรวจสอบอีกครั้ง</button>
     </div>
   </div>
-
-  <!-- ══ SCREEN: STEP 6 — กรอกข้อมูล ════════════ -->
-  <div class="screen" id="screen-info">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-service')">←</button>
-        <h2>ข้อมูลของคุณ</h2>
-        <span class="step-tag">6 / 9</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:66%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 6 จาก 9</div></div>
-    </div>
-    <div class="scroll-content">
-
-      <!-- Saved profile banner (shown when profile exists) -->
-      <div id="saved-profile-section" style="display:none">
-        <div class="profile-chip">✓ จดจำข้อมูลไว้แล้ว</div>
-        <div class="profile-banner" onclick="useProfile()">
-          <div class="profile-avatar">👤</div>
-          <div class="profile-info">
-            <div class="p-name" id="profile-display-name"></div>
-            <div class="p-phone" id="profile-display-phone"></div>
-          </div>
-          <div class="profile-use-btn">ใช้ข้อมูลนี้</div>
-        </div>
-        <p class="profile-hint">หรือกรอกข้อมูลใหม่ด้านล่าง</p>
-        <div class="divider-or"><span>กรอกข้อมูลอื่น</span></div>
-      </div>
-
-      <div class="form-group" id="fg-name">
-        <label class="form-label">ชื่อเล่น <span class="req">*</span></label>
-        <input class="form-input" id="inp-name" type="text" placeholder="เช่น นุ้ย, ปุ้ย" oninput="validateInfo()"/>
-        <div class="form-error">กรุณากรอกชื่อเล่น</div>
-      </div>
-      <div class="form-group" id="fg-phone">
-        <label class="form-label">เบอร์โทรศัพท์ <span class="req">*</span></label>
-        <input class="form-input" id="inp-phone" type="tel" placeholder="0812345678" maxlength="10" oninput="validateInfo()"/>
-        <div class="form-error">กรุณากรอกเบอร์โทรให้ถูกต้อง (10 หลัก)</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">LINE ID <span style="font-weight:400;color:var(--text-light)">(ถ้ามี)</span></label>
-        <input class="form-input" id="inp-line" type="text" placeholder="@yourlineid"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">หมายเหตุเพิ่มเติม <span style="font-weight:400;color:var(--text-light)">(ถ้ามี)</span></label>
-        <textarea class="form-input form-textarea" id="inp-note" placeholder="เช่น ต้องการสีขาว, เล็บสั้น..."></textarea>
-      </div>
-
-      <!-- Save checkbox (shown when typing new info) -->
-      <div id="save-profile-wrap" style="display:none;margin-top:4px;margin-bottom:8px">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 14px;background:var(--red-xlight);border:1.5px solid var(--red-light);border-radius:var(--radius-sm)">
-          <input type="checkbox" id="chk-save" checked style="accent-color:var(--red);width:18px;height:18px;cursor:pointer"/>
-          <span style="font-size:14px;color:var(--text)">จดจำข้อมูลนี้สำหรับการจองครั้งหน้า</span>
-          <span style="margin-left:auto;font-size:18px">💾</span>
-        </label>
-      </div>
-
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" id="btn-info-next" disabled onclick="goStep7()">ถัดไป →</button>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: STEP 7 — สรุปรายการ ════════════ -->
-  <div class="screen" id="screen-summary">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-info')">←</button>
-        <h2>สรุปรายการจอง</h2>
-        <span class="step-tag">7 / 9</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:77%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 7 จาก 9</div></div>
-    </div>
-    <div class="scroll-content">
-      <div class="summary-card">
-        <div class="summary-header">
-          <h3>💅 103STUDIO Nail Salon</h3>
-          <p id="sum-ref">กรุณาตรวจสอบข้อมูลก่อนยืนยัน</p>
-        </div>
-        <div class="summary-body" id="summary-body"></div>
-      </div>
-      <div class="deposit-badge">
-        <div class="amount">฿100</div>
-        <div class="label">ยอดมัดจำที่ต้องชำระ</div>
-      </div>
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" onclick="goStep8()">ยืนยันการจอง ✓</button>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: STEP 8 — ชำระมัดจำ ════════════ -->
-  <div class="screen" id="screen-payment">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-summary')">←</button>
-        <h2>ชำระมัดจำ</h2>
-        <span class="step-tag">8 / 9</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:88%"></div></div>
-      <div class="progress-label">ขั้นตอนที่ 8 จาก 9</div></div>
-    </div>
-    <div class="scroll-content">
-      <div class="qr-wrap">
-        <div id="timer-display" class="timer-badge">⏱ <span id="timer-text">15:00</span></div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px">กรุณาโอนเงินภายในเวลาที่กำหนด</p>
-        <div class="qr-box" id="qr-container">
-          <canvas id="qr-canvas"></canvas>
-        </div>
-        <div class="pay-amount">฿100</div>
-        <p class="pay-inst">สแกน QR ด้วยแอปธนาคารหรือ<br/><strong>กรุงไทย NEXT · SCB Easy · K PLUS</strong><br/>หรือแอปที่รองรับ PromptPay</p>
-      </div>
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" onclick="goStep9()">อัปโหลดสลิป →</button>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: STEP 9 — อัปโหลดสลิป ══════════ -->
-  <div class="screen" id="screen-slip">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-payment')">←</button>
-        <h2>อัปโหลดสลิป</h2>
-        <span class="step-tag">9 / 9</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
-      <div class="progress-label">ขั้นตอนสุดท้าย</div></div>
-    </div>
-    <div class="scroll-content">
-      <p class="section-title">อัปโหลดหลักฐานการโอนเงิน</p>
-      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-        <div class="icon">📎</div>
-        <p><strong>แตะเพื่อเลือกรูปสลิป</strong></p>
-        <p style="font-size:12px;margin-top:4px">รองรับ JPG, PNG • ขนาดสูงสุด 5MB</p>
-      </div>
-      <div class="upload-preview" id="slip-preview" style="display:none">
-        <img id="slip-img" src="" alt="สลิป"/>
-        <button class="remove-btn" onclick="removeSlip()">✕</button>
-      </div>
-      <input type="file" id="file-input" accept="image/jpeg,image/png" onchange="handleSlipUpload(this)"/>
-    </div>
-    <div class="bottom-action">
-      <button class="btn-primary" id="btn-submit-slip" disabled onclick="submitSlip()">ส่งสลิป ✓</button>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: SUCCESS ════════════════════════ -->
-  <div class="screen" id="screen-success">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <h2>การจองสำเร็จ</h2>
-      </div>
-    </div>
-    <div class="success-wrap">
-      <div class="success-icon">✅</div>
-      <h2>ได้รับสลิปแล้วค่ะ!</h2>
-      <div class="booking-ref-badge" id="success-ref"></div>
-      <p>กรุณารอแอดมินตรวจสอบ<br/>และยืนยันคิวสักครู่นะคะ 🙏</p>
-      <div style="background:var(--yellow-light);border:1px solid #F9E79F;border-radius:var(--radius-sm);padding:14px 18px;width:100%;text-align:center">
-        <span class="badge-status waiting">⏳ รอยืนยันคิว</span>
-        <p style="font-size:12px;color:var(--text-mid);margin-top:8px">ระบบจะแจ้งยืนยันผ่าน LINE</p>
-      </div>
-      <div id="success-summary" style="background:var(--surface);border-radius:var(--radius);padding:16px 20px;width:100%"></div>
-
-      <!-- LINE Message Card for Admin -->
-      <div style="width:100%;background:var(--white);border:1.5px solid #06C755;border-radius:var(--radius);overflow:hidden">
-        <div style="background:#06C755;padding:10px 16px;display:flex;align-items:center;gap:8px">
-          <span style="font-size:18px">💬</span>
-          <span style="font-family:'Prompt',sans-serif;font-size:13px;font-weight:700;color:var(--white)">ข้อความสำหรับแอดมินส่ง LINE ยืนยันคิว</span>
-        </div>
-        <div style="padding:14px 16px">
-          <div id="line-msg-box" style="background:#F0F9F1;border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--text);line-height:2;white-space:pre-wrap;font-family:'Noto Sans Thai',sans-serif;border:1px solid #C8EFD0"></div>
-          <button onclick="copyLineMsg()" id="copy-btn" style="margin-top:12px;width:100%;height:46px;background:#06C755;color:var(--white);border:none;border-radius:24px;font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s">
-            <span>📋</span> คัดลอกข้อความ
-          </button>
-          <p style="font-size:11px;color:var(--text-light);text-align:center;margin-top:8px">คัดลอกแล้ววางใน LINE เพื่อส่งยืนยันให้ลูกค้า</p>
-        </div>
-      </div>
-
-      <button class="btn-primary" style="margin-top:4px" onclick="goHome()">กลับหน้าแรก</button>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: PRICES ═════════════════════════ -->
-  <div class="screen" id="screen-prices">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-home')">←</button>
-        <h2>ราคาบริการ</h2>
-      </div>
-    </div>
-    <div class="scroll-content">
-      <div id="price-list"></div>
-    </div>
-    <div class="bottom-action" style="padding-bottom:20px">
-      <button class="btn-primary" onclick="startBooking()">💅 จองคิวเลย</button>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: CONTACT ════════════════════════ -->
-  <div class="screen" id="screen-contact">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-home')">←</button>
-        <h2>ติดต่อร้าน</h2>
-      </div>
-    </div>
-    <div class="scroll-content">
-      <div style="background:var(--red-xlight);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:20px">
-        <div style="font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;color:var(--red)">103STUDIO</div>
-        <div style="font-size:13px;color:var(--text-mid)">NAIL SALON · 2 สาขา</div>
-      </div>
-      <div id="contact-list"></div>
-      <div style="margin-top:20px">
-        <p class="section-title">แผนที่</p>
-        <div style="background:var(--surface);border-radius:var(--radius);height:160px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--border);cursor:pointer" onclick="showToast('เปิด Google Maps...')">
-          <div style="text-align:center">
-            <div style="font-size:32px">📍</div>
-            <div style="font-size:13px;color:var(--text-mid);margin-top:6px">กดเพื่อดูแผนที่ใน Google Maps</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: LOCK NUMBER ═══════════════════ -->
-  <div class="screen" id="screen-lock">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-home')">←</button>
-        <h2>เลขล็อกวันนี้</h2>
-      </div>
-    </div>
-    <div class="scroll-content">
-      <div style="text-align:center;padding:12px 0 24px">
-        <div style="font-size:13px;color:var(--text-mid);margin-bottom:8px">อัปเดตล่าสุดโดยทีมงาน</div>
-        <div id="lock-date-label" style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:20px"></div>
-        <div id="lock-cards" style="display:flex;flex-direction:column;gap:12px"></div>
-        <div style="margin-top:24px;font-size:12px;color:var(--text-light);line-height:1.8">
-          * เลขล็อกเป็นการแนะนำจากทีมงาน<br/>ไม่ใช่การการันตีผลใดๆ
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN: POINTS ════════════════════════ -->
-  <div class="screen" id="screen-points">
-    <div class="top-bar">
-      <div class="top-bar-inner">
-        <button class="btn-back" onclick="showScreen('screen-home')">←</button>
-        <h2>สะสมแต้ม</h2>
-      </div>
-    </div>
-    <div class="scroll-content">
-      <div id="points-lookup" style="display:block">
-        <div style="text-align:center;padding:20px 0 16px">
-          <div style="font-size:32px;margin-bottom:10px">⭐</div>
-          <p style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">ตรวจสอบแต้มสะสม</p>
-          <p style="font-size:13px;color:var(--text-mid)">กรอกเบอร์โทรเพื่อดูแต้มของคุณ</p>
-        </div>
-        <div class="form-group">
-          <label class="form-label">เบอร์โทรศัพท์</label>
-          <input class="form-input" id="pts-phone" type="tel" placeholder="0812345678" maxlength="10"/>
-        </div>
-        <button class="btn-primary" onclick="lookupPoints()" style="width:100%">ตรวจสอบแต้ม</button>
-      </div>
-      <div id="points-result" style="display:none;margin-top:16px">
-        <div class="points-card">
-          <div class="pts-num" id="pts-count">0</div>
-          <div class="pts-label">แต้มสะสมทั้งหมด</div>
-        </div>
-        <div style="background:var(--surface);border-radius:var(--radius);padding:16px">
-          <p class="section-title" style="margin-bottom:10px">วิธีสะสมแต้ม</p>
-          <div style="font-size:13px;color:var(--text-mid);line-height:2">
-            📸 ถ่ายรูปสลิปบริการ แล้วส่งให้แอดมิน<br/>
-            ⭐ ทุก 1 บริการ = 1 แต้ม<br/>
-            🎁 ครบ 10 แต้ม รับส่วนลดพิเศษ
-          </div>
-        </div>
-        <button class="btn-primary" style="margin-top:12px;background:var(--surface);color:var(--red);box-shadow:none;border:1.5px solid var(--red)" onclick="document.getElementById('points-result').style.display='none';document.getElementById('points-lookup').style.display='block'">ตรวจสอบอีกครั้ง</button>
-      </div>
-    </div>
-  </div>
+</div>
 
 </div><!-- end #app -->
 
-<!-- ── LIFF LOADING OVERLAY ─────────────────── -->
+<!-- LIFF LOADING -->
 <div class="liff-loading" id="liff-loading">
   <div class="liff-spinner"></div>
   <div style="font-family:'Prompt',sans-serif;font-size:16px;font-weight:600;color:var(--text)">103STUDIO</div>
   <div style="font-size:13px;color:var(--text-mid)">กำลังโหลด...</div>
 </div>
 
-<!-- ── LINE NOT-IN-APP GATE ──────────────────── -->
+<!-- LINE GATE -->
 <div id="screen-line-gate">
-  <div class="line-gate-icon">💬</div>
+  <div style="width:96px;height:96px;border-radius:50%;background:#06C755;display:flex;align-items:center;justify-content:center;font-size:48px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)">💬</div>
   <div style="font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;color:var(--text)">กรุณาเปิดลิงก์นี้<br/>ผ่าน LINE</div>
   <div style="font-size:15px;color:var(--text-mid);line-height:1.8">เพื่อจองคิวได้อย่างสมบูรณ์<br/>ระบบต้องใช้ LINE Account<br/>สำหรับยืนยันตัวตนและแจ้งเตือนค่ะ</div>
   <div style="background:var(--red-xlight);border:1.5px solid var(--red-light);border-radius:var(--radius);padding:16px 20px;width:100%;max-width:360px">
     <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:8px">วิธีเปิดผ่าน LINE</div>
-    <div style="font-size:13px;color:var(--text-mid);line-height:2">
-      1. เปิดแอป LINE<br/>
-      2. ไปที่ LINE OA ของ 103STUDIO<br/>
-      3. กดเมนู "จองคิว" ในแชทค่ะ
-    </div>
+    <div style="font-size:13px;color:var(--text-mid);line-height:2">1. เปิดแอป LINE<br/>2. ไปที่ LINE OA ของ 103STUDIO<br/>3. กดเมนู "จองคิว" ในแชทค่ะ</div>
   </div>
-  <div style="font-size:12px;color:var(--text-light);margin-top:8px">หรือสแกน QR Code เพื่อเพิ่มเพื่อน LINE OA</div>
-  <!-- Dev mode bypass button (ซ่อนใน Production) -->
-  <button id="dev-bypass-btn" onclick="bypassLiffForDev()" style="margin-top:20px;padding:10px 24px;background:var(--surface);border:1.5px dashed var(--border-mid);border-radius:20px;font-size:12px;color:var(--text-light);cursor:pointer">
-    🛠️ Dev Mode: ทดสอบโดยไม่ใช้ LINE
-  </button>
+  <button id="dev-bypass-btn" onclick="bypassLiffForDev()" style="margin-top:20px;padding:10px 24px;background:var(--surface);border:1.5px dashed var(--border-mid);border-radius:20px;font-size:12px;color:var(--text-light);cursor:pointer">🛠️ Dev Mode: ทดสอบโดยไม่ใช้ LINE</button>
 </div>
 
 <div id="toast"></div>
 
-<!-- ═══════════ LIFF SDK ══════════════════════════ -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
-<!-- ═══════════ QR Library (Simple Canvas-based QR) ══════ -->
-<script>
-/* Minimal QR Code generator for PromptPay display */
-(function(){
-  // Simple visual QR placeholder with PromptPay pattern
-  window.drawQR = function(canvasId){
-    const canvas = document.getElementById(canvasId);
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = 200; canvas.height = 200;
-    ctx.fillStyle='#fff'; ctx.fillRect(0,0,200,200);
-    // Draw decorative QR-like pattern
-    const s=8,pad=16;
-    // Finder patterns
-    function finder(x,y){
-      ctx.fillStyle='#1a1a1a';
-      ctx.fillRect(x,y,s*7,s*7);
-      ctx.fillStyle='#fff';
-      ctx.fillRect(x+s,y+s,s*5,s*5);
-      ctx.fillStyle='#1a1a1a';
-      ctx.fillRect(x+s*2,y+s*2,s*3,s*3);
-    }
-    finder(pad,pad); finder(200-pad-s*7,pad); finder(pad,200-pad-s*7);
-    // Random data modules
-    ctx.fillStyle='#1a1a1a';
-    for(let r=0;r<21;r++){for(let c=0;c<21;c++){
-      const px=pad+c*s,py=pad+r*s;
-      if(r<8&&(c<8||c>12)||r>12&&c<8) continue;
-      if(Math.random()>0.5) ctx.fillRect(px,py,s-1,s-1);
-    }}
-    // PromptPay label
-    ctx.fillStyle='var(--red,#C0392B)';
-    ctx.font='bold 12px Prompt,Arial';
-    ctx.textAlign='center';
-    ctx.fillText('PromptPay',100,190);
-    ctx.fillStyle='#555';
-    ctx.font='10px Arial';
-    ctx.fillText('103STUDIO',100,180);
-  };
-})();
-</script>
-
 <script>
 /* ═══════════════════════════════════════════════
-   LIFF CONFIG  ← ใส่ LIFF ID จริงของร้านตรงนี้
+   CONFIG
 ═══════════════════════════════════════════════ */
-const LIFF_ID = '2010463130-HvB8mhL6';
-
-/* ═══════════════════════════════════════════════
-   SUPABASE CONFIG
-═══════════════════════════════════════════════ */
+const LIFF_ID       = '2010463130-HvB8mhL6';
 const SUPABASE_URL  = 'https://nhkewudaibspjzmpjqzq.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oa2V3dWRhaWJzcGp6bXBqcXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NTk0OTUsImV4cCI6MjA5ODEzNTQ5NX0.22oJM_fmX8u6rcGxpT2TVyCd5o8QObr7e_xTD9wHKow';
+const CONFLICT_MINS = 40; // นาที — ระยะกันคิวชน
 
-// Supabase REST helper
+/* ═══════════════════════════════════════════════
+   SUPABASE HELPER
+═══════════════════════════════════════════════ */
 const sb = {
-  async insert(table, data){
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=representation'},
-      body: JSON.stringify(data)
-    });
-    if(!r.ok) throw new Error(await r.text());
-    return r.json();
+  headers(extra={}){
+    return {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,...extra};
   },
-  async update(table, match, data){
-    const params = Object.entries(match).map(([k,v])=>`${k}=eq.${v}`).join('&');
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
-      method:'PATCH',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=representation'},
-      body: JSON.stringify(data)
-    });
-    if(!r.ok) throw new Error(await r.text());
-    return r.json();
+  async insert(table,data){
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}`,{method:'POST',headers:this.headers({'Prefer':'return=representation'}),body:JSON.stringify(data)});
+    if(!r.ok)throw new Error(await r.text());return r.json();
   },
-  async select(table, params=''){
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}&order=created_at.desc`, {
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
-    });
-    if(!r.ok) throw new Error(await r.text());
-    return r.json();
+  async update(table,match,data){
+    const p=Object.entries(match).map(([k,v])=>`${k}=eq.${encodeURIComponent(v)}`).join('&');
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?${p}`,{method:'PATCH',headers:this.headers({'Prefer':'return=representation'}),body:JSON.stringify(data)});
+    if(!r.ok)throw new Error(await r.text());return r.json();
   },
-  async uploadSlip(file, bookingRef){
-    // Convert to base64 and store URL via storage bucket
-    return new Promise((resolve)=>{
-      const reader = new FileReader();
-      reader.onload = e => resolve(e.target.result); // base64 data URL
-      reader.readAsDataURL(file);
+  async select(table,params=''){
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}&order=created_at.desc`,{headers:this.headers()});
+    if(!r.ok)throw new Error(await r.text());return r.json();
+  },
+  async uploadStorage(bucket,path,file,onProgress){
+    // Upload via XHR for progress tracking
+    return new Promise((resolve,reject)=>{
+      const xhr=new XMLHttpRequest();
+      xhr.open('POST',`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`);
+      xhr.setRequestHeader('apikey',SUPABASE_KEY);
+      xhr.setRequestHeader('Authorization',`Bearer ${SUPABASE_KEY}`);
+      xhr.upload.onprogress=e=>{if(e.lengthComputable&&onProgress)onProgress(Math.round(e.loaded/e.total*100));};
+      xhr.onload=()=>{
+        if(xhr.status===200||xhr.status===201){
+          const url=`${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+          resolve(url);
+        } else reject(new Error(xhr.responseText));
+      };
+      xhr.onerror=()=>reject(new Error('Upload failed'));
+      const fd=new FormData();fd.append('',file);
+      xhr.send(fd);
     });
   }
 };
-
-/* ═══════════════════════════════════════════════
-   LINE PROFILE (เก็บ session นี้)
-═══════════════════════════════════════════════ */
-let lineProfile = null;
-// lineProfile = { userId, displayName, pictureUrl, statusMessage }
 
 /* ═══════════════════════════════════════════════
    DATA
 ═══════════════════════════════════════════════ */
-const BRANCHES = [
-  {id:1, name:'ตลาดเซฟวันโก', sub:'แยก คปอ.', icon:'📍', staffs:[1,2,3]},
-  {id:2, name:'ยูเพลินมอลล์ เฟส 2', sub:'คลองหก', icon:'📍', staffs:[4]},
+const BRANCHES=[
+  {id:1,name:'ตลาดเซฟวันโก',sub:'แยก คปอ.',icon:'📍',staffs:[1,2,3]},
+  {id:2,name:'ยูเพลินมอลล์ เฟส 2',sub:'คลองหก',icon:'📍',staffs:[4]},
 ];
-const STAFFS = [
-  {id:1,branch_id:1,name:'ช่างโย',   emoji:'💅'},
-  {id:2,branch_id:1,name:'ช่างแป้ว', emoji:'💅'},
+const STAFFS=[
+  {id:1,branch_id:1,name:'ช่างโย',emoji:'💅'},
+  {id:2,branch_id:1,name:'ช่างแป้ว',emoji:'💅'},
   {id:3,branch_id:1,name:'ช่างโฟกัส',emoji:'💅'},
-  {id:4,branch_id:2,name:'ช่างปิ๊ก', emoji:'💅'},
+  {id:4,branch_id:2,name:'ช่างปิ๊ก',emoji:'💅'},
 ];
-const SERVICES = [
-  {id:1, name:'ทาสีเจลมือ'},
-  {id:2, name:'ทาสีเจลเท้า'},
-  {id:3, name:'ทาสีเจลมือและเท้า'},
-  {id:4, name:'ต่อเล็บ'},
-  {id:5, name:'ถอดเล็บ PVC'},
-  {id:6, name:'ล้างสีเจล'},
-  {id:7, name:'เพ้นท์ลาย'},
-  {id:8, name:'อื่นๆ (ระบุหน้าร้าน)'},
+const SERVICES=[
+  {id:1,name:'ทาสีเจลมือ'},{id:2,name:'ทาสีเจลเท้า'},{id:3,name:'ทาสีเจลมือและเท้า'},
+  {id:4,name:'ต่อเล็บ'},{id:5,name:'ถอดเล็บ PVC'},{id:6,name:'ล้างสีเจล'},
+  {id:7,name:'เพ้นท์ลาย'},{id:8,name:'อื่นๆ (ระบุหน้าร้าน)'},
 ];
-// ราคาแยกสาขา branch_id: 1=เซฟวันโก, 2=คลองหก
-const PRICES = [
-  // ── สาขา 1 ──
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'ทาสีพื้น (1สี)', hand:'150.-', foot:'250.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'ทาสีขาว ดำ', hand:'200.-', foot:'300.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'สีแฟลช 1สี', hand:'250.-', foot:'350.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'สีลูกแก้ว 1สี', hand:'250-350.-', foot:'300-400.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'สีกลิตเตอร์ 1สี', hand:'250-400.-', foot:'300-450.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'สีชิมเมอร์, สีไซรัป 1สี', hand:'250-300.-', foot:'300-350.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'ตัดหนัง (ทาสี)', hand:'100.-', foot:'200.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'ตัดหนังไม่ทาสี', hand:'150.-', foot:'250.-'},
-  {branch_id:1, cat:'ทาสี (COLOR)', name:'🔸 สีที่ 2 เพิ่ม 50 บาท | บุฟเฟต์สี เพิ่ม 100 บาท', hand:'', foot:''},
-  {branch_id:1, cat:'ล้างสีเจล (ทำใหม่)', name:'ล้างสีเจล', hand:'50.-', foot:'50.-'},
-  {branch_id:1, cat:'ล้างสีเจล (ทำใหม่)', name:'ถอด PVC', hand:'100.-', foot:'100.-'},
-  {branch_id:1, cat:'ล้างสีเจล (ทำใหม่)', name:'ถอดอะคลีลิก, โพลี่เจล', hand:'100.-', foot:'100.-'},
-  {branch_id:1, cat:'ล้างสีเจล (พักเล็บ)', name:'ล้างสีเจล', hand:'120.-', foot:''},
-  {branch_id:1, cat:'ล้างสีเจล (พักเล็บ)', name:'ถอด PVC', hand:'200.-', foot:''},
-  {branch_id:1, cat:'ล้างสีเจล (พักเล็บ)', name:'ถอดอะคลีลิก, โพลี่เจล', hand:'250.-', foot:''},
-  {branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'ต่อ PVC ชิดโคนกาวเจล', hand:'200.-', foot:''},
-  {branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'*ต่อ PVC เว้นโคนกาวเจลง', hand:'300.-', foot:''},
-  {branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'ต่อเจล, ต่อโพลี่เจล (สีในเจล, ใส)', hand:'999.-', foot:''},
-  {branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'เติมโคนเจล, เติมโคนโพลี่เจล', hand:'699.-', foot:''},
-  {branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'เสริมหน้าเล็บ', hand:'150.- (ไม่ทาสี 200.-)', foot:''},
-  {branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'OVERLAY', hand:'300.-', foot:''},
-  {branch_id:1, cat:'ต่อเล็บ / เสริมหน้าเล็บ', name:'OVERLAY (สีในเจล)', hand:'350.-', foot:''},
-  // ── สาขา 2 ──
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'ทาสีพื้น (1สี)', hand:'189.-', foot:'300.-'},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'ทาสีขาว แดง ดำ เหลือง', hand:'250.-', foot:'350.-'},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'สีแฟลช 1สี', hand:'300.-', foot:'350.-'},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'สีลูกแก้ว 1สี', hand:'300.-', foot:'350.-'},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'สีกลิตเตอร์ 1สี', hand:'400.-', foot:'450.-'},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'สีชิมเมอร์, สีไซรัป 1สี', hand:'300.-', foot:'350.-'},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'🔸 สีที่ 2 เพิ่ม 50 บาท/สี | บุฟเฟต์สี เพิ่ม 100 บาท', hand:'', foot:''},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'ตัดหนัง', hand:'200.-', foot:'300.-'},
-  {branch_id:2, cat:'ทาสี (COLOR)', name:'ตัดหนัง เท้า + ขัดส้นเท้า', hand:'', foot:'499.-'},
-  {branch_id:2, cat:'ล้างสีเจล', name:'ล้างสีเจล (ทำใหม่ ลูกค้าเก่า/ใหม่)', hand:'50.-', foot:'50.-'},
-  {branch_id:2, cat:'ล้างสีเจล', name:'ล้างสีเจล (พักเล็บ)', hand:'150.-', foot:'150.-'},
-  {branch_id:2, cat:'ล้างสีเจล', name:'ค่าถอด PVC (ทำใหม่)', hand:'100.-', foot:'100.-'},
-  {branch_id:2, cat:'ล้างสีเจล', name:'ค่าถอด PVC (พักเล็บ)', hand:'250.-', foot:'250.-'},
-  {branch_id:2, cat:'เสริมหน้าเล็บ / OVERLAY', name:'เสริมหน้าเล็บ', hand:'150.-', foot:''},
-  {branch_id:2, cat:'เสริมหน้าเล็บ / OVERLAY', name:'OVERLAY', hand:'300.-', foot:''},
-  {branch_id:2, cat:'เสริมหน้าเล็บ / OVERLAY', name:'OVERLAY + เฟรน', hand:'599.-', foot:''},
-  {branch_id:2, cat:'NAIL EXTENSION', name:'ต่อ PVC กาวเจลเว้นโคน', hand:'300.-', foot:''},
-  {branch_id:2, cat:'NAIL EXTENSION', name:'ต่อเจล 1สี', hand:'999.-', foot:''},
-  {branch_id:2, cat:'NAIL EXTENSION', name:'ต่อโพลี่เจล 1สี', hand:'999.-', foot:''},
-  {branch_id:2, cat:'NAIL EXTENSION', name:'ต่อปลายทิป 1สี', hand:'799.-', foot:''},
-  {branch_id:2, cat:'NAIL EXTENSION', name:'🔸 ราคาเฉพาะต่อมือ | ต่อเท้าเพิ่ม 100.- ทุกรายการ', hand:'', foot:''},
+const CONTACT=[
+  {icon:'📞',label:'โทรศัพท์',value:'098-765-4321'},
+  {icon:'💬',label:'LINE OA',value:'@103studio'},
+  {icon:'📘',label:'Facebook',value:'103STUDIO Nail Salon'},
+  {icon:'📍',label:'สาขา 1',value:'ตลาดเซฟวันโก แยก คปอ.'},
+  {icon:'📍',label:'สาขา 2',value:'ยูเพลินมอลล์ เฟส 2 คลองหก'},
+  {icon:'🕐',label:'เวลาทำการ',value:'11:30 – 21:30 น. ทุกวัน'},
 ];
-const CONTACT = [
-  {icon:'📞', label:'โทรศัพท์', value:'098-765-4321'},
-  {icon:'💬', label:'LINE OA', value:'@103studio'},
-  {icon:'📘', label:'Facebook', value:'103STUDIO Nail Salon'},
-  {icon:'📍', label:'สาขา 1', value:'ตลาดเซฟวันโก แยก คปอ.'},
-  {icon:'📍', label:'สาขา 2', value:'ยูเพลินมอลล์ เฟส 2 คลองหก'},
-  {icon:'🕐', label:'เวลาทำการ', value:'11:30 – 21:30 น. ทุกวัน'},
+const LOCK_NUMBERS=[
+  {branch:'ตลาดเซฟวันโก',numbers:['47','12','89','36']},
+  {branch:'ยูเพลินมอลล์ คลองหก',numbers:['23','67','04','88']},
 ];
-const LOCK_NUMBERS = [
-  {branch:'ตลาดเซฟวันโก', numbers:['47','12','89','36']},
-  {branch:'ยูเพลินมอลล์ คลองหก', numbers:['23','67','04','88']},
+const PRICES=[
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'ทาสีพื้น (1สี)',hand:'150.-',foot:'250.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'ทาสีขาว ดำ',hand:'200.-',foot:'300.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'สีแฟลช 1สี',hand:'250.-',foot:'350.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'สีลูกแก้ว 1สี',hand:'250-350.-',foot:'300-400.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'สีกลิตเตอร์ 1สี',hand:'250-400.-',foot:'300-450.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'สีชิมเมอร์, สีไซรัป 1สี',hand:'250-300.-',foot:'300-350.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'ตัดหนัง (ทาสี)',hand:'100.-',foot:'200.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'ตัดหนังไม่ทาสี',hand:'150.-',foot:'250.-'},
+  {branch_id:1,cat:'ทาสี (COLOR)',name:'🔸 สีที่ 2 เพิ่ม 50 บาท | บุฟเฟต์สี เพิ่ม 100 บาท',hand:'',foot:''},
+  {branch_id:1,cat:'ล้างสีเจล (ทำใหม่)',name:'ล้างสีเจล',hand:'50.-',foot:'50.-'},
+  {branch_id:1,cat:'ล้างสีเจล (ทำใหม่)',name:'ถอด PVC',hand:'100.-',foot:'100.-'},
+  {branch_id:1,cat:'ล้างสีเจล (ทำใหม่)',name:'ถอดอะคลีลิก, โพลี่เจล',hand:'100.-',foot:'100.-'},
+  {branch_id:1,cat:'ล้างสีเจล (พักเล็บ)',name:'ล้างสีเจล',hand:'120.-',foot:''},
+  {branch_id:1,cat:'ล้างสีเจล (พักเล็บ)',name:'ถอด PVC',hand:'200.-',foot:''},
+  {branch_id:1,cat:'ล้างสีเจล (พักเล็บ)',name:'ถอดอะคลีลิก, โพลี่เจล',hand:'250.-',foot:''},
+  {branch_id:1,cat:'ต่อเล็บ / เสริมหน้าเล็บ',name:'ต่อ PVC ชิดโคนกาวเจล',hand:'200.-',foot:''},
+  {branch_id:1,cat:'ต่อเล็บ / เสริมหน้าเล็บ',name:'ต่อเจล, ต่อโพลี่เจล (สีในเจล, ใส)',hand:'999.-',foot:''},
+  {branch_id:1,cat:'ต่อเล็บ / เสริมหน้าเล็บ',name:'เติมโคนเจล, เติมโคนโพลี่เจล',hand:'699.-',foot:''},
+  {branch_id:1,cat:'ต่อเล็บ / เสริมหน้าเล็บ',name:'เสริมหน้าเล็บ',hand:'150.- (ไม่ทาสี 200.-)',foot:''},
+  {branch_id:1,cat:'ต่อเล็บ / เสริมหน้าเล็บ',name:'OVERLAY',hand:'300.-',foot:''},
+  {branch_id:1,cat:'ต่อเล็บ / เสริมหน้าเล็บ',name:'OVERLAY (สีในเจล)',hand:'350.-',foot:''},
+  {branch_id:2,cat:'ทาสี (COLOR)',name:'ทาสีพื้น (1สี)',hand:'189.-',foot:'300.-'},
+  {branch_id:2,cat:'ทาสี (COLOR)',name:'ทาสีขาว แดง ดำ เหลือง',hand:'250.-',foot:'350.-'},
+  {branch_id:2,cat:'ทาสี (COLOR)',name:'สีแฟลช 1สี',hand:'300.-',foot:'350.-'},
+  {branch_id:2,cat:'ทาสี (COLOR)',name:'สีลูกแก้ว 1สี',hand:'300.-',foot:'350.-'},
+  {branch_id:2,cat:'ทาสี (COLOR)',name:'สีกลิตเตอร์ 1สี',hand:'400.-',foot:'450.-'},
+  {branch_id:2,cat:'ทาสี (COLOR)',name:'สีชิมเมอร์, สีไซรัป 1สี',hand:'300.-',foot:'350.-'},
+  {branch_id:2,cat:'ทาสี (COLOR)',name:'ตัดหนัง',hand:'200.-',foot:'300.-'},
+  {branch_id:2,cat:'ล้างสีเจล',name:'ล้างสีเจล (ทำใหม่)',hand:'50.-',foot:'50.-'},
+  {branch_id:2,cat:'ล้างสีเจล',name:'ล้างสีเจล (พักเล็บ)',hand:'150.-',foot:'150.-'},
+  {branch_id:2,cat:'ล้างสีเจล',name:'ค่าถอด PVC (ทำใหม่)',hand:'100.-',foot:'100.-'},
+  {branch_id:2,cat:'ล้างสีเจล',name:'ค่าถอด PVC (พักเล็บ)',hand:'250.-',foot:'250.-'},
+  {branch_id:2,cat:'เสริมหน้าเล็บ / OVERLAY',name:'เสริมหน้าเล็บ',hand:'150.-',foot:''},
+  {branch_id:2,cat:'เสริมหน้าเล็บ / OVERLAY',name:'OVERLAY',hand:'300.-',foot:''},
+  {branch_id:2,cat:'เสริมหน้าเล็บ / OVERLAY',name:'OVERLAY + เฟรน',hand:'599.-',foot:''},
+  {branch_id:2,cat:'NAIL EXTENSION',name:'ต่อ PVC กาวเจลเว้นโคน',hand:'300.-',foot:''},
+  {branch_id:2,cat:'NAIL EXTENSION',name:'ต่อเจล 1สี',hand:'999.-',foot:''},
+  {branch_id:2,cat:'NAIL EXTENSION',name:'ต่อโพลี่เจล 1สี',hand:'999.-',foot:''},
+  {branch_id:2,cat:'NAIL EXTENSION',name:'ต่อปลายทิป 1สี',hand:'799.-',foot:''},
 ];
 
-// ไม่ใช้ Mock BOOKED อีกต่อไป — ดึงจาก Supabase แทน
-const BOOKED = []; // placeholder (ระบบใช้ checkSlotAvailability แทน)
-const BLOCKED_DATES = []; // placeholder (Admin ตั้งค่าผ่านหลังบ้าน)
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let lineProfile=null;
+let savedProfile=null;
+let booking={branch:null,date:null,time:null,staff:null,services:[],name:'',phone:'',lineId:'',note:'',ref:'',lineUserId:'',lineDisplayName:'',linePictureUrl:''};
+let calYear,calMonth,timerInterval,lineMsgText='';
+let _blockedDatesCache=null;
+let activePriceBranchBooking=1;
+let slipFile=null; // เก็บไฟล์สลิปที่เลือก
 
-// ─── ตรวจ slot ว่างจาก Supabase ─────────────────
-async function checkSlotAvailability(branchId, date, time, staffId=null){
-  try {
-    let params = `branch_id=eq.${branchId}&booking_date=eq.${date}&booking_time=eq.${time}&status=neq.CANCELLED&status=neq.EXPIRED&select=staff_id`;
-    const rows = await sb.select('bookings', params);
-    return rows || [];
-  } catch(e){
-    console.warn('checkSlot error:', e);
-    return [];
-  }
+/* ═══════════════════════════════════════════════
+   CONFLICT CHECK — 40 นาที
+═══════════════════════════════════════════════ */
+function timeToMins(t){
+  const[h,m]=t.slice(0,5).split(':').map(Number);return h*60+m;
+}
+function isWithin40(t1,t2){
+  return Math.abs(timeToMins(t1)-timeToMins(t2))<CONFLICT_MINS;
+}
+async function getBookedForDate(branchId,date){
+  try{
+    const rows=await sb.select('bookings',
+      `branch_id=eq.${branchId}&booking_date=eq.${date}&status=not.in.(CANCELLED,EXPIRED)&select=staff_id,booking_time`
+    );
+    return rows||[];
+  }catch(e){console.warn('getBooked err:',e);return[];}
+}
+async function isStaffConflict(branchId,date,time,staffId){
+  if(!staffId||staffId===0)return false;
+  const rows=await getBookedForDate(branchId,date);
+  return rows.some(r=>r.staff_id===staffId&&isWithin40(r.booking_time,time));
+}
+async function hasAnyStaffAvailable(branchId,date,time){
+  const branchStaffs=STAFFS.filter(s=>s.branch_id===branchId);
+  const rows=await getBookedForDate(branchId,date);
+  return branchStaffs.some(s=>{
+    const conflicts=rows.filter(r=>r.staff_id===s.id&&isWithin40(r.booking_time,time));
+    return conflicts.length===0;
+  });
 }
 
-// ─── ดึงวันที่ปิดจาก Supabase ─────────────────────
-let _blockedDatesCache = null;
+/* ═══════════════════════════════════════════════
+   BLOCKED DATES
+═══════════════════════════════════════════════ */
 async function fetchBlockedDates(){
-  if(_blockedDatesCache) return _blockedDatesCache;
-  try {
-    const rows = await sb.select('blocked_dates','select=blocked_date');
-    _blockedDatesCache = rows.map(r=>r.blocked_date);
-    return _blockedDatesCache;
-  } catch(e){ return []; }
+  if(_blockedDatesCache)return _blockedDatesCache;
+  try{const rows=await sb.select('blocked_dates','select=blocked_date');_blockedDatesCache=rows.map(r=>r.blocked_date);return _blockedDatesCache;}
+  catch(e){return[];}
 }
 
 /* ═══════════════════════════════════════════════
-   BOOKING STATE
+   LIFF
 ═══════════════════════════════════════════════ */
-let booking = {
-  branch:null, date:null, time:null, staff:null,
-  services:[], name:'', phone:'', lineId:'', note:'', ref:'',
-  // LINE data (filled after LIFF login)
-  lineUserId:'', lineDisplayName:'', linePictureUrl:''
-};
-let calYear, calMonth, timerInterval;
+async function initLiff(){
+  if(!LIFF_ID||LIFF_ID==='YOUR_LIFF_ID_HERE'){hideLiffLoading();return;}
+  try{
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isInClient()){hideLiffLoading();showLineGate();return;}
+    if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
+    const profile=await liff.getProfile();
+    lineProfile={userId:profile.userId,displayName:profile.displayName,pictureUrl:profile.pictureUrl};
+    booking.lineUserId=lineProfile.userId;
+    booking.lineDisplayName=lineProfile.displayName;
+    booking.linePictureUrl=lineProfile.pictureUrl;
+    if(!savedProfile)savedProfile={name:lineProfile.displayName,phone:'',lineId:'',linePicture:lineProfile.pictureUrl};
+    renderLineChip();renderHomeProfile();hideLiffLoading();
+  }catch(err){console.error('[LIFF]',err);hideLiffLoading();}
+}
+function hideLiffLoading(){document.getElementById('liff-loading').classList.add('hide');}
+function showLineGate(){document.getElementById('screen-line-gate').classList.add('show');document.getElementById('app').style.display='none';}
+function bypassLiffForDev(){
+  lineProfile={userId:'Udev_test_12345',displayName:'Dev Tester',pictureUrl:''};
+  booking.lineUserId=lineProfile.userId;booking.lineDisplayName=lineProfile.displayName;booking.linePictureUrl='';
+  document.getElementById('screen-line-gate').classList.remove('show');document.getElementById('app').style.display='';
+  renderLineChip();showToast('🛠️ Dev Mode: จำลอง LINE User');
+}
+function renderLineChip(){
+  if(!lineProfile)return;
+  const chip=document.getElementById('line-profile-chip');
+  const img=document.getElementById('line-avatar-img');
+  const name=document.getElementById('line-display-name');
+  if(lineProfile.pictureUrl){img.src=lineProfile.pictureUrl;img.style.display='block';document.getElementById('line-avatar-fallback').style.display='none';}
+  else{img.style.display='none';document.getElementById('line-avatar-fallback').style.display='flex';}
+  name.textContent=lineProfile.displayName;chip.style.display='flex';
+}
 
 /* ═══════════════════════════════════════════════
-   SCREEN NAVIGATION
+   HOME PROFILE
 ═══════════════════════════════════════════════ */
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
+function renderHomeProfile(){
+  const card=document.getElementById('home-profile-card');
+  if(!savedProfile||!savedProfile.name){card.style.display='none';return;}
+  const avatarHtml=(lineProfile?.pictureUrl)?`<img src="${lineProfile.pictureUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #06C755"/>`:
+    `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-size:16px">👤</div>`;
+  card.style.display='block';
+  card.innerHTML=`<div style="display:flex;align-items:center;gap:10px">${avatarHtml}<div style="flex:1"><div style="font-size:11px;color:var(--text-mid)">ยินดีต้อนรับกลับ 💅</div><div style="font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--text)">${savedProfile.name}</div>${savedProfile.phone?`<div style="font-size:12px;color:var(--text-mid)">${savedProfile.phone}</div>`:''}</div><button class="forget-link" onclick="forgetProfile()" style="font-size:11px">ลืมข้อมูล</button></div>`;
 }
+function forgetProfile(){savedProfile=null;renderHomeProfile();showToast('ลบข้อมูลที่จดจำไว้แล้ว');}
+
+/* ═══════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════ */
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
 function startBooking(){renderBranches();showScreen('screen-branch');}
 function goHome(){clearTimer();showScreen('screen-home');}
 
@@ -985,387 +721,155 @@ function goHome(){clearTimer();showScreen('screen-home');}
    STEP 1: BRANCH
 ═══════════════════════════════════════════════ */
 function renderBranches(){
-  const el = document.getElementById('branch-cards');
-  el.innerHTML = BRANCHES.map(b=>`
-    <div class="sel-card${booking.branch?.id===b.id?' selected':''}" onclick="selectBranch(${b.id})">
-      <div class="card-icon">${b.icon}</div>
-      <div class="card-title">${b.name}</div>
-      <div class="card-sub">${b.sub}</div>
-    </div>`).join('');
+  document.getElementById('branch-cards').innerHTML=BRANCHES.map(b=>`<div class="sel-card${booking.branch?.id===b.id?' selected':''}" onclick="selectBranch(${b.id})"><div class="card-icon">${b.icon}</div><div class="card-title">${b.name}</div><div class="card-sub">${b.sub}</div></div>`).join('');
 }
-function selectBranch(id){
-  booking.branch = BRANCHES.find(b=>b.id===id);
-  booking.staff = null; // reset staff when branch changes
-  renderBranches();
-  document.getElementById('btn-branch-next').disabled = false;
-}
-function goStep2(){
-  const today = new Date();
-  calYear = today.getFullYear(); calMonth = today.getMonth();
-  renderCalendar();
-  showScreen('screen-date');
-}
+function selectBranch(id){booking.branch=BRANCHES.find(b=>b.id===id);booking.staff=null;renderBranches();document.getElementById('btn-branch-next').disabled=false;}
+function goStep2(){const t=new Date();calYear=t.getFullYear();calMonth=t.getMonth();renderCalendar();showScreen('screen-date');}
 
 /* ═══════════════════════════════════════════════
-   STEP 2: DATE / CALENDAR
+   STEP 2: CALENDAR
 ═══════════════════════════════════════════════ */
 const TH_MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const TH_MONTHS_SHORT=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DOW=['อา','จ','อ','พ','พฤ','ศ','ส'];
-
 async function renderCalendar(){
-  document.getElementById('cal-month-label').textContent = TH_MONTHS[calMonth]+' '+(calYear+543);
-  const dowEl = document.getElementById('cal-dow');
-  dowEl.innerHTML = DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('');
-  const today = new Date(); today.setHours(0,0,0,0);
-  const firstDay = new Date(calYear,calMonth,1).getDay();
-  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
-  const blockedDates = await fetchBlockedDates();
-  let html = '';
-  for(let i=0;i<firstDay;i++) html+='<div></div>';
+  document.getElementById('cal-month-label').textContent=TH_MONTHS[calMonth]+' '+(calYear+543);
+  document.getElementById('cal-dow').innerHTML=DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const today=new Date();today.setHours(0,0,0,0);
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const blockedDates=await fetchBlockedDates();
+  let html='';
+  for(let i=0;i<firstDay;i++)html+='<div></div>';
   for(let d=1;d<=daysInMonth;d++){
-    const date = new Date(calYear,calMonth,d);
-    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isPast = date < today;
-    const isBlocked = blockedDates.includes(dateStr);
-    const isToday = date.getTime()===today.getTime();
-    const isSelected = booking.date===dateStr;
-    let cls = 'cal-day';
-    if(isPast) cls+=' cal-day--past';
-    else if(isBlocked) cls+=' cal-day--blocked';
-    if(isToday) cls+=' cal-day--today';
-    if(isSelected) cls+=' cal-day--selected';
-    const onclick = (!isPast&&!isBlocked)?`onclick="selectDate('${dateStr}')"` :'';
-    html+=`<div class="${cls}" ${onclick}>${d}</div>`;
+    const date=new Date(calYear,calMonth,d);
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast=date<today,isBlocked=blockedDates.includes(dateStr),isToday=date.getTime()===today.getTime(),isSelected=booking.date===dateStr;
+    let cls='cal-day';
+    if(isPast)cls+=' cal-day--past';else if(isBlocked)cls+=' cal-day--blocked';
+    if(isToday)cls+=' cal-day--today';if(isSelected)cls+=' cal-day--selected';
+    html+=`<div class="${cls}" ${(!isPast&&!isBlocked)?`onclick="selectDate('${dateStr}')"`:''}>${d}</div>`;
   }
-  document.getElementById('cal-days').innerHTML = html;
+  document.getElementById('cal-days').innerHTML=html;
 }
-function calPrev(){
-  calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar();
-}
-function calNext(){
-  calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar();
-}
-function selectDate(dateStr){
-  booking.date = dateStr; booking.time = null;
-  renderCalendar();
-  document.getElementById('btn-date-next').disabled = false;
-}
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+function selectDate(dateStr){booking.date=dateStr;booking.time=null;renderCalendar();document.getElementById('btn-date-next').disabled=false;}
 function goStep3(){
-  const [y,m,d] = booking.date.split('-');
-  document.getElementById('selected-date-label').textContent = `วันที่ ${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} ${parseInt(y)+543}`;
-  renderTimeSlots();
-  showScreen('screen-time');
-}
-function goStep4(){
-  const [y,m,d]=booking.date.split('-');
-  document.getElementById('staff-info-label').textContent = `${booking.branch.name} · ${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} · ${booking.time} น.`;
-  renderStaffCards();
-  showScreen('screen-staff');
-}
-function selectTime(t){
-  booking.time=t; booking.staff=null;
-  renderTimeSlots();
-  document.getElementById('btn-time-next').disabled=false;
+  const[y,m,d]=booking.date.split('-');
+  document.getElementById('selected-date-label').textContent=`วันที่ ${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} ${parseInt(y)+543}`;
+  renderTimeSlots();showScreen('screen-time');
 }
 
 /* ═══════════════════════════════════════════════
-   STEP 3: TIME SLOTS
+   STEP 3: TIME — กันคิวชน 40 นาที
 ═══════════════════════════════════════════════ */
 function generateSlots(){
   const slots=[];
   for(let h=11;h<=21;h++){
-    for(const m of (h===11?[30]:h===21?[0,30]:[0,30])){
-      if(h===21&&m>30) break;
+    for(const m of(h===11?[30]:h===21?[0,30]:[0,30])){
+      if(h===21&&m>30)break;
       slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
     }
   }
   return slots;
 }
-
 async function renderTimeSlots(){
   document.getElementById('time-slots').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-mid)">⏳ กำลังตรวจสอบ...</div>`;
-  const slots = generateSlots();
-  const totalStaff = STAFFS.filter(s=>s.branch_id===booking.branch.id).length;
-  const bookedRows = await checkSlotAvailability(booking.branch.id, booking.date);
+  const slots=generateSlots();
+  const bookedRows=await getBookedForDate(booking.branch.id,booking.date);
+  const totalStaff=STAFFS.filter(s=>s.branch_id===booking.branch.id).length;
 
-  document.getElementById('time-slots').innerHTML = slots.map(t=>{
-    const bookedAtTime = bookedRows.filter(r=> {
-      const bt = r.booking_time?.slice(0,5);
-      return bt===t;
+  const slotHtml=await Promise.all(slots.map(async t=>{
+    // ตรวจว่ามีช่างว่างสำหรับ slot นี้หรือไม่ (คำนึง 40 นาที)
+    const branchStaffs=STAFFS.filter(s=>s.branch_id===booking.branch.id);
+    const availableStaffs=branchStaffs.filter(s=>{
+      const myConflicts=bookedRows.filter(r=>r.staff_id===s.id&&isWithin40(r.booking_time,t));
+      return myConflicts.length===0;
     });
-    const full = bookedAtTime.length >= totalStaff;
-    const sel  = booking.time===t;
-    return `<div class="time-slot${full?' time-slot--full':sel?' time-slot--selected':''}"
-      ${full?'':`onclick="selectTime('${t}')"`}>${full?t+'<br/>เต็ม':t}</div>`;
-  }).join('');
+    const isFull=availableStaffs.length===0;
+    const sel=booking.time===t;
+    if(isFull){
+      return `<div class="time-slot time-slot--full">${t}<br/>ไม่ว่าง</div>`;
+    }
+    return `<div class="time-slot${sel?' time-slot--selected':''}" onclick="selectTime('${t}')">${t}</div>`;
+  }));
+  document.getElementById('time-slots').innerHTML=slotHtml.join('');
+}
+function selectTime(t){booking.time=t;booking.staff=null;renderTimeSlots();document.getElementById('btn-time-next').disabled=false;}
+function goStep4(){
+  const[y,m,d]=booking.date.split('-');
+  document.getElementById('staff-info-label').textContent=`${booking.branch.name} · ${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} · ${booking.time} น.`;
+  renderStaffCards();showScreen('screen-staff');
 }
 
+/* ═══════════════════════════════════════════════
+   STEP 4: STAFF — กันคิวชน 40 นาที
+═══════════════════════════════════════════════ */
 async function renderStaffCards(){
   document.getElementById('staff-cards').innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-mid)">⏳ กำลังตรวจสอบ...</div>`;
-  const branchStaffs = STAFFS.filter(s=>s.branch_id===booking.branch.id);
-  const bookedRows   = await checkSlotAvailability(booking.branch.id, booking.date, booking.time);
-  const bookedIds    = bookedRows.filter(r=>r.staff_id).map(r=>r.staff_id);
-  const totalStaff   = branchStaffs.length;
-  const canUnassigned= bookedRows.length < totalStaff;
+  const branchStaffs=STAFFS.filter(s=>s.branch_id===booking.branch.id);
+  const bookedRows=await getBookedForDate(booking.branch.id,booking.date);
+  
+  const cards=await Promise.all(branchStaffs.map(async s=>{
+    const conflicts=bookedRows.filter(r=>r.staff_id===s.id&&isWithin40(r.booking_time,booking.time));
+    const busy=conflicts.length>0;
+    const sel=booking.staff?.id===s.id;
+    return `<div class="staff-card${sel?' selected':''}${busy?' disabled':''}" ${busy?'':` onclick="selectStaff(${s.id})"`}>
+      <div class="staff-avatar">${s.emoji}</div>
+      <div class="staff-info"><div class="staff-name">${s.name}</div><div class="staff-tag">${booking.branch.name}</div></div>
+      <span class="staff-avail ${busy?'busy':'free'}">${busy?'ไม่ว่าง':'ว่าง'}</span>
+    </div>`;
+  }));
 
-  const allCards = [
-    ...branchStaffs.map(s=>{
-      const busy = bookedIds.includes(s.id);
-      const sel  = booking.staff?.id===s.id;
-      return `<div class="staff-card${sel?' selected':busy?' disabled':''}" ${busy?'':`onclick="selectStaff(${s.id})"`}>
-        <div class="staff-avatar">${s.emoji}</div>
-        <div class="staff-info">
-          <div class="staff-name">${s.name}</div>
-          <div class="staff-tag">${booking.branch.name}</div>
-        </div>
-        <span class="staff-avail ${busy?'busy':'free'}">${busy?'ไม่ว่าง':'ว่าง'}</span>
-      </div>`;
-    }),
-    `<div class="staff-card${booking.staff?.id===0?' selected':''} ${canUnassigned?'':'disabled'}"
-      ${canUnassigned?'onclick="selectStaff(0)"':''}>
-      <div class="staff-avatar">🎲</div>
-      <div class="staff-info">
-        <div class="staff-name">ไม่ระบุช่าง</div>
-        <div class="staff-tag">${canUnassigned?'มีช่างว่าง':'คิวเต็ม'}</div>
-      </div>
-      <span class="staff-avail ${canUnassigned?'free':'busy'}">${canUnassigned?'ว่าง':'เต็ม'}</span>
-    </div>`
-  ];
-  document.getElementById('staff-cards').innerHTML = allCards.join('');
+  // ไม่ระบุช่าง
+  const anyAvail=branchStaffs.some(s=>bookedRows.filter(r=>r.staff_id===s.id&&isWithin40(r.booking_time,booking.time)).length===0);
+  const unassignedCard=`<div class="staff-card${booking.staff?.id===0?' selected':''}${anyAvail?'':' disabled'}" ${anyAvail?'onclick="selectStaff(0)"':''}>
+    <div class="staff-avatar">🎲</div>
+    <div class="staff-info"><div class="staff-name">ไม่ระบุช่าง</div><div class="staff-tag">${anyAvail?'มีช่างว่าง':'คิวเต็ม'}</div></div>
+    <span class="staff-avail ${anyAvail?'free':'busy'}">${anyAvail?'ว่าง':'เต็ม'}</span>
+  </div>`;
+  document.getElementById('staff-cards').innerHTML=[...cards,unassignedCard].join('');
 }
 function selectStaff(id){
-  if(id===0) booking.staff={id:0,name:'ไม่ระบุช่าง'};
-  else booking.staff = STAFFS.find(s=>s.id===id);
-  renderStaffCards();
-  document.getElementById('btn-staff-next').disabled=false;
+  if(id===0)booking.staff={id:0,name:'ไม่ระบุช่าง'};
+  else booking.staff=STAFFS.find(s=>s.id===id);
+  renderStaffCards();document.getElementById('btn-staff-next').disabled=false;
 }
 function goStep5(){renderServices();showScreen('screen-service');}
-// called from service screen next button — defined below after profile system
 
 /* ═══════════════════════════════════════════════
    STEP 5: SERVICES
 ═══════════════════════════════════════════════ */
 function renderServices(){
-  document.getElementById('service-list').innerHTML = SERVICES.map(s=>{
-    const sel = booking.services.includes(s.id);
+  document.getElementById('service-list').innerHTML=SERVICES.map(s=>{
+    const sel=booking.services.includes(s.id);
     return `<div class="svc-item${sel?' selected':''}" onclick="toggleService(${s.id})">
       <div class="svc-check"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <span class="svc-name">${s.name}</span>
-    </div>`;
+      <span class="svc-name">${s.name}</span></div>`;
   }).join('');
 }
-function toggleService(id){
-  const idx=booking.services.indexOf(id);
-  if(idx>=0) booking.services.splice(idx,1); else booking.services.push(id);
-  renderServices();
-  document.getElementById('btn-svc-next').disabled = booking.services.length===0;
-}
-function goStep6(){showScreen('screen-info');}
-
-/* ═══════════════════════════════════════════════
-   LIFF INIT  — รันทันทีที่เปิดหน้าเว็บ
-═══════════════════════════════════════════════ */
-async function initLiff(){
-  // ถ้าไม่ได้ตั้ง LIFF ID ให้ข้ามเป็น dev mode อัตโนมัติ
-  if(!LIFF_ID || LIFF_ID === 'YOUR_LIFF_ID_HERE'){
-    console.warn('[LIFF] No LIFF_ID set — running in dev mode');
-    hideLiffLoading();
-    return;
-  }
-
-  try {
-    await liff.init({ liffId: LIFF_ID });
-
-    // ตรวจว่าเปิดใน LINE App หรือไม่
-    if(!liff.isInClient()){
-      // ไม่ได้เปิดใน LINE → แสดงหน้า Gate
-      hideLiffLoading();
-      showLineGate();
-      return;
-    }
-
-    // อยู่ใน LINE แต่ยังไม่ได้ login
-    if(!liff.isLoggedIn()){
-      liff.login({ redirectUri: location.href });
-      return; // หน้าจะ redirect ไป login แล้วกลับมา
-    }
-
-    // Login แล้ว — ดึง profile
-    const profile = await liff.getProfile();
-    lineProfile = {
-      userId:       profile.userId,
-      displayName:  profile.displayName,
-      pictureUrl:   profile.pictureUrl,
-      statusMessage:profile.statusMessage || ''
-    };
-
-    // บันทึกเข้า booking
-    booking.lineUserId      = lineProfile.userId;
-    booking.lineDisplayName = lineProfile.displayName;
-    booking.linePictureUrl  = lineProfile.pictureUrl;
-
-    // อัปเดต savedProfile ถ้าว่างอยู่
-    if(!savedProfile){
-      savedProfile = {
-        name: lineProfile.displayName,
-        phone:'',
-        lineId:'',
-        linePicture: lineProfile.pictureUrl
-      };
-    }
-
-    renderLineChip();
-    renderHomeProfile();
-    hideLiffLoading();
-
-  } catch(err){
-    console.error('[LIFF] init error:', err);
-    hideLiffLoading();
-    // ถ้า init fail ให้ใช้ dev mode แทน (graceful degradation)
-  }
-}
-
-function hideLiffLoading(){
-  document.getElementById('liff-loading').classList.add('hide');
-}
-
-function showLineGate(){
-  document.getElementById('screen-line-gate').classList.add('show');
-  document.getElementById('app').style.display = 'none';
-}
-
-// Dev mode bypass — แสดงเฉพาะใน dev
-function bypassLiffForDev(){
-  // จำลอง LINE profile สำหรับทดสอบ
-  lineProfile = {
-    userId: 'Udev_test_12345',
-    displayName: 'Dev Tester',
-    pictureUrl: '',
-    statusMessage: ''
-  };
-  booking.lineUserId      = lineProfile.userId;
-  booking.lineDisplayName = lineProfile.displayName;
-  booking.linePictureUrl  = lineProfile.pictureUrl;
-
-  document.getElementById('screen-line-gate').classList.remove('show');
-  document.getElementById('app').style.display = '';
-  renderLineChip();
-  showToast('🛠️ Dev Mode: จำลอง LINE User สำเร็จ');
-}
-
-function renderLineChip(){
-  if(!lineProfile) return;
-  const chip = document.getElementById('line-profile-chip');
-  const img  = document.getElementById('line-avatar-img');
-  const name = document.getElementById('line-display-name');
-  if(lineProfile.pictureUrl){
-    img.src = lineProfile.pictureUrl;
-    img.style.display = 'block';
-    document.getElementById('line-avatar-fallback').style.display = 'none';
-  } else {
-    img.style.display = 'none';
-    document.getElementById('line-avatar-fallback').style.display = 'flex';
-  }
-  name.textContent = lineProfile.displayName;
-  chip.style.display = 'flex';
-}
-
-/* ═══════════════════════════════════════════════
-   CUSTOMER PROFILE MEMORY (in-memory, session)
-═══════════════════════════════════════════════ */
-let savedProfile = null;
-
-function loadProfile(){
-  renderHomeProfile();
-  // LIFF init runs on page load
-  initLiff();
-}
-
-function renderHomeProfile(){
-  const card   = document.getElementById('home-profile-card');
-  const nameEl = document.getElementById('home-profile-name');
-  if(savedProfile && savedProfile.name){
-    // Build avatar — LINE picture or emoji fallback
-    const avatarHtml = (lineProfile?.pictureUrl)
-      ? `<img src="${lineProfile.pictureUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #06C755"/>`
-      : `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-size:16px">👤</div>`;
-    const subText = savedProfile.phone
-      ? savedProfile.phone
-      : (lineProfile ? 'เชื่อมต่อ LINE แล้ว ✓' : '');
-    card.style.display = 'block';
-    card.innerHTML = `<div style="display:flex;align-items:center;gap:10px">
-      ${avatarHtml}
-      <div style="flex:1">
-        <div style="font-size:11px;color:var(--text-mid)">ยินดีต้อนรับกลับ 💅</div>
-        <div style="font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:var(--text)">${savedProfile.name}</div>
-        ${subText?`<div style="font-size:12px;color:var(--text-mid)">${subText}</div>`:''}
-      </div>
-      <button class="forget-link" onclick="forgetProfile()" style="font-size:11px">ลืมข้อมูล</button>
-    </div>`;
-  } else {
-    card.style.display = 'none';
-    card.innerHTML = '';
-  }
-}
-
-function forgetProfile(){
-  savedProfile = null;
-  renderHomeProfile();
-  showToast('ลบข้อมูลที่จดจำไว้แล้ว');
-}
-
+function toggleService(id){const idx=booking.services.indexOf(id);if(idx>=0)booking.services.splice(idx,1);else booking.services.push(id);renderServices();document.getElementById('btn-svc-next').disabled=booking.services.length===0;}
 function goStep6(){
-  // Pre-fill or show saved profile when entering info step
-  const profileSection = document.getElementById('saved-profile-section');
-  const saveWrap = document.getElementById('save-profile-wrap');
-  const nameInp = document.getElementById('inp-name');
-  const phoneInp = document.getElementById('inp-phone');
-  const lineInp = document.getElementById('inp-line');
-
-  if(savedProfile){
-    // Show profile banner at top
-    document.getElementById('profile-display-name').textContent = savedProfile.name;
-    document.getElementById('profile-display-phone').textContent = savedProfile.phone + (savedProfile.lineId ? ' · LINE: '+savedProfile.lineId : '');
-    profileSection.style.display = 'block';
-    saveWrap.style.display = 'none';
-    // Clear fields so user consciously fills if they want to override
-    nameInp.value = '';
-    phoneInp.value = '';
-    lineInp.value = '';
-    document.getElementById('inp-note').value = '';
-    document.getElementById('btn-info-next').disabled = true;
-  } else {
-    profileSection.style.display = 'none';
-    saveWrap.style.display = 'block';
-    nameInp.value = '';
-    phoneInp.value = '';
-    lineInp.value = '';
-    document.getElementById('inp-note').value = '';
-    document.getElementById('btn-info-next').disabled = true;
-  }
-  // Show save checkbox when typing
-  nameInp.addEventListener('input', showSaveCheckbox, {once:true});
-  phoneInp.addEventListener('input', showSaveCheckbox, {once:true});
+  const profileSection=document.getElementById('saved-profile-section');
+  const saveWrap=document.getElementById('save-profile-wrap');
+  if(savedProfile&&savedProfile.name){
+    document.getElementById('profile-display-name').textContent=savedProfile.name;
+    document.getElementById('profile-display-phone').textContent=savedProfile.phone+(savedProfile.lineId?' · LINE: '+savedProfile.lineId:'');
+    profileSection.style.display='block';saveWrap.style.display='none';
+    document.getElementById('inp-name').value='';document.getElementById('inp-phone').value='';
+    document.getElementById('inp-line').value='';document.getElementById('inp-note').value='';
+    document.getElementById('btn-info-next').disabled=true;
+  }else{profileSection.style.display='none';saveWrap.style.display='block';document.getElementById('btn-info-next').disabled=true;}
   showScreen('screen-info');
 }
-
-function showSaveCheckbox(){
-  if(!savedProfile){
-    document.getElementById('save-profile-wrap').style.display = 'block';
-  }
-}
-
 function useProfile(){
-  // Fill fields from saved profile and enable next button
-  document.getElementById('inp-name').value = savedProfile.name;
-  document.getElementById('inp-phone').value = savedProfile.phone;
-  document.getElementById('inp-line').value = savedProfile.lineId || '';
-  document.getElementById('save-profile-wrap').style.display = 'none';
-  document.getElementById('btn-info-next').disabled = false;
-  // Smooth scroll to show it's been filled
-  document.getElementById('inp-name').scrollIntoView({behavior:'smooth', block:'center'});
-  showToast('✓ ใส่ข้อมูลให้แล้ว สะดวกมากขึ้นใช่ไหมคะ 💅');
+  document.getElementById('inp-name').value=savedProfile.name;
+  document.getElementById('inp-phone').value=savedProfile.phone;
+  document.getElementById('inp-line').value=savedProfile.lineId||'';
+  document.getElementById('save-profile-wrap').style.display='none';
+  document.getElementById('btn-info-next').disabled=false;
+  showToast('✓ ใส่ข้อมูลให้แล้วค่ะ 💅');
 }
 
 /* ═══════════════════════════════════════════════
@@ -1377,380 +881,268 @@ function validateInfo(){
   const phoneOk=/^[0-9]{10}$/.test(phone);
   document.getElementById('fg-name').classList.toggle('has-error',name.length===0&&name!=='');
   document.getElementById('fg-phone').classList.toggle('has-error',phone.length>0&&!phoneOk);
-  document.getElementById('btn-info-next').disabled = !(name&&phoneOk);
-  // Show save checkbox when user starts typing new data
-  if(savedProfile && (name || phone)){
-    document.getElementById('save-profile-wrap').style.display = 'block';
-  }
+  document.getElementById('btn-info-next').disabled=!(name&&phoneOk);
+  if(savedProfile&&(name||phone))document.getElementById('save-profile-wrap').style.display='block';
 }
 function goStep7(){
-  booking.name = document.getElementById('inp-name').value.trim();
-  booking.phone = document.getElementById('inp-phone').value.trim();
-  booking.lineId = document.getElementById('inp-line').value.trim();
-  booking.note = document.getElementById('inp-note').value.trim();
+  booking.name=document.getElementById('inp-name').value.trim();
+  booking.phone=document.getElementById('inp-phone').value.trim();
+  booking.lineId=document.getElementById('inp-line').value.trim();
+  booking.note=document.getElementById('inp-note').value.trim();
   if(!booking.name){document.getElementById('fg-name').classList.add('has-error');return;}
   if(!/^[0-9]{10}$/.test(booking.phone)){document.getElementById('fg-phone').classList.add('has-error');return;}
-
-  // Save profile if checkbox checked
-  const chk = document.getElementById('chk-save');
-  if(chk && chk.checked){
-    const isNewInfo = !savedProfile || savedProfile.name!==booking.name || savedProfile.phone!==booking.phone;
-    if(isNewInfo){
-      savedProfile = {name:booking.name, phone:booking.phone, lineId:booking.lineId};
-      renderHomeProfile();
-    }
+  const chk=document.getElementById('chk-save');
+  if(chk&&chk.checked){
+    const isNew=!savedProfile||savedProfile.name!==booking.name||savedProfile.phone!==booking.phone;
+    if(isNew)savedProfile={name:booking.name,phone:booking.phone,lineId:booking.lineId};
+    renderHomeProfile();
   }
-
-  booking.ref = 'BK'+new Date().getFullYear()+String(new Date().getMonth()+1).padStart(2,'0')+String(new Date().getDate()).padStart(2,'0')+String(Math.floor(Math.random()*900)+100);
-  renderSummary();
-  showScreen('screen-summary');
+  booking.ref='BK'+new Date().getFullYear()+String(new Date().getMonth()+1).padStart(2,'0')+String(new Date().getDate()).padStart(2,'0')+String(Math.floor(Math.random()*900)+100);
+  renderSummary();showScreen('screen-summary');
 }
 
 /* ═══════════════════════════════════════════════
    STEP 7: SUMMARY
 ═══════════════════════════════════════════════ */
 function renderSummary(){
-  document.getElementById('sum-ref').textContent = 'เลขที่จอง: '+booking.ref;
-  const [y,m,d] = booking.date.split('-');
-  const dateStr = `${parseInt(d)} ${TH_MONTHS[parseInt(m)-1]} ${parseInt(y)+543}`;
-  const svcNames = booking.services.map(id=>SERVICES.find(s=>s.id===id)?.name).join(', ');
-  const rows = [
-    ['ชื่อ',booking.name],
-    ['เบอร์',booking.phone],
-    ['LINE',booking.lineId||'–'],
-    ['สาขา',booking.branch.name+' '+booking.branch.sub],
-    ['วันที่',dateStr],
-    ['เวลา',booking.time+' น.'],
-    ['ช่าง',booking.staff?.name||'ไม่ระบุ'],
-    ['บริการ',svcNames],
-    ['หมายเหตุ',booking.note||'–'],
-  ];
-  document.getElementById('summary-body').innerHTML = rows.map(([l,v])=>`
-    <div class="summary-row">
-      <span class="summary-label">${l}</span>
-      <span class="summary-val">${v}</span>
-    </div>`).join('');
+  document.getElementById('sum-ref').textContent='เลขที่จอง: '+booking.ref;
+  const[y,m,d]=booking.date.split('-');
+  const dateStr=`${parseInt(d)} ${TH_MONTHS[parseInt(m)-1]} ${parseInt(y)+543}`;
+  const svcNames=booking.services.map(id=>SERVICES.find(s=>s.id===id)?.name).join(', ');
+  const rows=[['ชื่อ',booking.name],['เบอร์',booking.phone],['LINE',booking.lineId||'–'],['สาขา',booking.branch.name+' '+booking.branch.sub],['วันที่',dateStr],['เวลา',booking.time+' น.'],['ช่าง',booking.staff?.name||'ไม่ระบุ'],['บริการ',svcNames],['หมายเหตุ',booking.note||'–']];
+  document.getElementById('summary-body').innerHTML=rows.map(([l,v])=>`<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-val">${v}</span></div>`).join('');
 }
-function goStep8(){
-  showScreen('screen-payment');
-  drawQR('qr-canvas');
-  startTimer(15*60);
-}
+function goStep8(){showScreen('screen-payment');drawQR('qr-canvas');startTimer(15*60);}
 
 /* ═══════════════════════════════════════════════
    STEP 8: PAYMENT TIMER
 ═══════════════════════════════════════════════ */
 function startTimer(seconds){
-  clearTimer();
-  let remaining=seconds;
-  updateTimerDisplay(remaining);
-  timerInterval=setInterval(()=>{
-    remaining--;
-    updateTimerDisplay(remaining);
-    if(remaining<=0){
-      clearTimer();
-      showToast('หมดเวลาชำระมัดจำ กรุณาจองใหม่');
-      setTimeout(()=>goHome(),2000);
-    }
-  },1000);
+  clearTimer();let remaining=seconds;updateTimerDisplay(remaining);
+  timerInterval=setInterval(()=>{remaining--;updateTimerDisplay(remaining);if(remaining<=0){clearTimer();showToast('หมดเวลาชำระมัดจำ กรุณาจองใหม่');setTimeout(()=>goHome(),2000);}},1000);
 }
 function clearTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null;}}
 function updateTimerDisplay(s){
   const m=Math.floor(s/60),sec=s%60;
-  const txt=`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  document.getElementById('timer-text').textContent=txt;
+  document.getElementById('timer-text').textContent=`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   const el=document.getElementById('timer-display');
-  if(s<=60) el.classList.add('urgent'); else el.classList.remove('urgent');
+  if(s<=60)el.classList.add('urgent');else el.classList.remove('urgent');
 }
-function goStep9(){clearTimer();showScreen('screen-slip');}
+function goStep9(){clearTimer();slipFile=null;removeSlip();showScreen('screen-slip');}
 
 /* ═══════════════════════════════════════════════
-   STEP 9: SLIP UPLOAD
+   STEP 9: SLIP UPLOAD — อัปโหลดจริงไป Supabase Storage
 ═══════════════════════════════════════════════ */
 function handleSlipUpload(input){
   const file=input.files[0];
-  if(!file) return;
-  if(file.size>5*1024*1024){showToast('ไฟล์ใหญ่เกิน 5MB');return;}
+  if(!file)return;
+  const allowed=['image/jpeg','image/jpg','image/png','image/webp'];
+  if(!allowed.includes(file.type)){showToast('รองรับเฉพาะ JPG, PNG, WEBP เท่านั้น');return;}
+  if(file.size>10*1024*1024){showToast('ไฟล์ใหญ่เกิน 10MB กรุณาเลือกไฟล์ใหม่');return;}
+  slipFile=file;
   const reader=new FileReader();
   reader.onload=e=>{
     document.getElementById('slip-img').src=e.target.result;
     document.getElementById('slip-preview').style.display='block';
     document.getElementById('upload-zone').style.display='none';
+    document.getElementById('slip-file-info').textContent=`${file.name} (${(file.size/1024).toFixed(0)} KB)`;
     document.getElementById('btn-submit-slip').disabled=false;
+    document.getElementById('conflict-warning').style.display='none';
   };
   reader.readAsDataURL(file);
 }
 function removeSlip(){
+  slipFile=null;
   document.getElementById('slip-preview').style.display='none';
   document.getElementById('upload-zone').style.display='block';
   document.getElementById('file-input').value='';
   document.getElementById('btn-submit-slip').disabled=true;
+  document.getElementById('upload-progress-wrap').style.display='none';
 }
+
 async function submitSlip(){
-  const fileInput = document.getElementById('file-input');
-  const file = fileInput.files[0];
-  if(!file){ showToast('กรุณาเลือกรูปสลิปก่อนครับ'); return; }
+  if(!slipFile){showToast('กรุณาเลือกรูปสลิปก่อนครับ');return;}
+  const btn=document.getElementById('btn-submit-slip');
+  btn.disabled=true;btn.textContent='⏳ กำลังตรวจสอบและบันทึก...';
 
-  // Disable button + show loading
-  const btn = document.getElementById('btn-submit-slip');
-  btn.disabled = true;
-  btn.textContent = '⏳ กำลังส่งข้อมูล...';
-  showToast('กำลังบันทึกการจอง...');
-
-  try {
-    const svcNames = booking.services.map(id=>SERVICES.find(s=>s.id===id)?.name).join(', ');
-
-    // 1. บันทึก Booking เข้า Supabase
-    const bookingData = {
-      booking_ref:       booking.ref,
-      branch_id:         booking.branch.id,
-      branch_name:       booking.branch.name + ' ' + booking.branch.sub,
-      staff_id:          booking.staff?.id || null,
-      staff_name:        booking.staff?.name || 'ไม่ระบุช่าง',
-      booking_date:      booking.date,
-      booking_time:      booking.time,
-      customer_name:     booking.name,
-      customer_phone:    booking.phone,
-      customer_line_id:  booking.lineId || '',
-      customer_line_uid: booking.lineUserId || '',
-      customer_line_name:booking.lineDisplayName || '',
-      customer_line_pic: booking.linePictureUrl || '',
-      services:          svcNames,
-      note:              booking.note || '',
-      deposit_amount:    100,
-      status:            'WAITING_ADMIN_CONFIRM',
-    };
-
-    await sb.insert('bookings', bookingData);
-
-    // 2. แปลงรูปสลิปเป็น base64 แล้วบันทึก
-    const slipBase64 = await sb.uploadSlip(file, booking.ref);
-    await sb.update('bookings', {booking_ref: booking.ref}, {slip_url: slipBase64});
-
-    // 3. บันทึกใน payments table
-    const rows = await sb.select('bookings', `booking_ref=eq.${booking.ref}&select=id`);
-    if(rows && rows[0]){
-      await sb.insert('payments', {
-        booking_id:  rows[0].id,
-        booking_ref: booking.ref,
-        slip_url:    slipBase64,
-      });
+  // ─── 1. ตรวจคิวชน 40 นาที ก่อน submit ───
+  const conflictWarn=document.getElementById('conflict-warning');
+  try{
+    const staffId=booking.staff?.id&&booking.staff.id!==0?booking.staff.id:null;
+    if(staffId){
+      const conflict=await isStaffConflict(booking.branch.id,booking.date,booking.time,staffId);
+      if(conflict){
+        conflictWarn.style.display='block';
+        conflictWarn.textContent='ขออภัยค่ะ ช่างท่านนี้มีคิวในช่วงเวลาใกล้กัน กรุณาเลือกเวลาห่างอย่างน้อย 40 นาที หรือเลือกช่างท่านอื่นค่ะ';
+        btn.disabled=false;btn.textContent='ส่งสลิป ✓';return;
+      }
+    } else {
+      const anyAvail=await hasAnyStaffAvailable(booking.branch.id,booking.date,booking.time);
+      if(!anyAvail){
+        conflictWarn.style.display='block';
+        conflictWarn.textContent='ขออภัยค่ะ ช่วงเวลานี้คิวเต็มแล้ว กรุณาเลือกเวลาอื่นค่ะ';
+        btn.disabled=false;btn.textContent='ส่งสลิป ✓';return;
+      }
     }
 
-    showToast('✅ ส่งข้อมูลสำเร็จ!');
-    setTimeout(()=>{ renderSuccess(); showScreen('screen-success'); }, 800);
+    // ─── 2. อัปโหลดสลิปไป Supabase Storage ───
+    document.getElementById('upload-progress-wrap').style.display='block';
+    const ext=slipFile.name.split('.').pop();
+    const path=`${booking.ref}_${Date.now()}.${ext}`;
+    btn.textContent='⏳ กำลังอัปโหลดสลิป...';
+    const slipUrl=await sb.uploadStorage('slips',path,slipFile,(pct)=>{
+      document.getElementById('upload-progress-bar').style.width=pct+'%';
+      document.getElementById('upload-progress-text').textContent=`กำลังอัปโหลด... ${pct}%`;
+    });
 
-  } catch(err) {
-    console.error('Supabase error:', err);
-    btn.disabled = false;
-    btn.textContent = 'ส่งสลิป ✓';
-    showToast('❌ เกิดข้อผิดพลาด กรุณาลองใหม่');
+    // ─── 3. บันทึก Booking เข้า Supabase ───
+    btn.textContent='⏳ กำลังบันทึกข้อมูล...';
+    document.getElementById('upload-progress-text').textContent='กำลังบันทึกข้อมูล...';
+    const svcNames=booking.services.map(id=>SERVICES.find(s=>s.id===id)?.name).join(', ');
+    const bookingData={
+      booking_ref:booking.ref,
+      branch_id:booking.branch.id,
+      branch_name:booking.branch.name+' '+booking.branch.sub,
+      staff_id:booking.staff?.id&&booking.staff.id!==0?booking.staff.id:null,
+      staff_name:booking.staff?.name||'ไม่ระบุช่าง',
+      booking_date:booking.date,
+      booking_time:booking.time,
+      customer_name:booking.name,
+      customer_phone:booking.phone,
+      customer_line_id:booking.lineId||'',
+      customer_line_uid:booking.lineUserId||'',
+      customer_line_name:booking.lineDisplayName||'',
+      customer_line_pic:booking.linePictureUrl||'',
+      services:svcNames,
+      note:booking.note||'',
+      deposit_amount:100,
+      status:'WAITING_ADMIN_CONFIRM',
+      booking_status:'WAITING_ADMIN_CONFIRM',
+      slip_image_url:slipUrl,
+      slip_uploaded_at:new Date().toISOString(),
+      payment_status:'waiting_review',
+    };
+    await sb.insert('bookings',bookingData);
+
+    document.getElementById('upload-progress-bar').style.width='100%';
+    document.getElementById('upload-progress-text').textContent='บันทึกสำเร็จ!';
+    showToast('✅ ส่งสลิปเรียบร้อยแล้วค่ะ!');
+    setTimeout(()=>{renderSuccess();showScreen('screen-success');},700);
+
+  }catch(err){
+    console.error('submitSlip error:',err);
+    conflictWarn.style.display='block';
+    conflictWarn.textContent='เกิดข้อผิดพลาด: '+err.message+'\nกรุณาลองใหม่อีกครั้งค่ะ';
+    btn.disabled=false;btn.textContent='ส่งสลิป ✓';
+    document.getElementById('upload-progress-wrap').style.display='none';
   }
 }
 
 /* ═══════════════════════════════════════════════
    SUCCESS
 ═══════════════════════════════════════════════ */
-let lineMsgText = '';
-
 function renderSuccess(){
-  document.getElementById('success-ref').textContent = booking.ref;
-  const [y,m,d] = booking.date.split('-');
-  const dateStr = `${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} ${parseInt(y)+543}`;
-  const svcNames = booking.services.map(id=>SERVICES.find(s=>s.id===id)?.name).join(', ');
-
-  // ── Summary box ──────────────────────────────
-  document.getElementById('success-summary').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
-      <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">ชื่อ</span><strong>${booking.name}</strong></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">เบอร์</span><strong>${booking.phone}</strong></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">สาขา</span><strong>${booking.branch.name}</strong></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">วันที่</span><strong>${dateStr}</strong></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">เวลา</span><strong>${booking.time} น.</strong></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">ช่าง</span><strong>${booking.staff?.name||'ไม่ระบุ'}</strong></div>
-      <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">บริการ</span><strong>${svcNames}</strong></div>
-    </div>`;
-
-  // ── LINE message for admin to send ───────────
-  lineMsgText =
-`🎉 ยืนยันคิวเรียบร้อยแล้วค่ะ!
-━━━━━━━━━━━━━━━━━
-💅 103STUDIO Nail Salon
-
-👤 ชื่อ: ${booking.name}
-📞 เบอร์: ${booking.phone}
-📍 สาขา: ${booking.branch.name}
-📅 วันที่: ${dateStr}
-🕐 เวลา: ${booking.time} น.
-✂️ ช่าง: ${booking.staff?.name||'ไม่ระบุ'}
-💆 บริการ: ${svcNames}
-━━━━━━━━━━━━━━━━━
-เลขที่จอง: ${booking.ref}
-
-พบกันนะคะ 😊💅`;
-
-  document.getElementById('line-msg-box').textContent = lineMsgText;
+  document.getElementById('success-ref').textContent=booking.ref;
+  const[y,m,d]=booking.date.split('-');
+  const dateStr=`${parseInt(d)} ${TH_MONTHS_SHORT[parseInt(m)-1]} ${parseInt(y)+543}`;
+  const svcNames=booking.services.map(id=>SERVICES.find(s=>s.id===id)?.name).join(', ');
+  document.getElementById('success-summary').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
+    <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">ชื่อ</span><strong>${booking.name}</strong></div>
+    <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">เบอร์</span><strong>${booking.phone}</strong></div>
+    <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">สาขา</span><strong>${booking.branch.name}</strong></div>
+    <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">วันที่</span><strong>${dateStr}</strong></div>
+    <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">เวลา</span><strong>${booking.time} น.</strong></div>
+    <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">ช่าง</span><strong>${booking.staff?.name||'ไม่ระบุ'}</strong></div>
+    <div style="display:flex;gap:8px"><span style="color:var(--text-mid);width:56px">บริการ</span><strong>${svcNames}</strong></div>
+  </div>`;
+  lineMsgText=`🎉 ยืนยันคิวเรียบร้อยแล้วค่ะ!\n━━━━━━━━━━━━━━━━━\n💅 103STUDIO Nail Salon\n\n👤 ชื่อ: ${booking.name}\n📞 เบอร์: ${booking.phone}\n📍 สาขา: ${booking.branch.name}\n📅 วันที่: ${dateStr}\n🕐 เวลา: ${booking.time} น.\n✂️ ช่าง: ${booking.staff?.name||'ไม่ระบุ'}\n💆 บริการ: ${svcNames}\n━━━━━━━━━━━━━━━━━\nเลขที่จอง: ${booking.ref}\n\nพบกันนะคะ 😊💅`;
+  document.getElementById('line-msg-box').textContent=lineMsgText;
 }
-
 function copyLineMsg(){
-  if(!lineMsgText) return;
-  // Use clipboard API with fallback
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(lineMsgText).then(()=>{
-      flashCopyBtn();
-    }).catch(()=>fallbackCopy());
-  } else {
-    fallbackCopy();
-  }
+  if(!lineMsgText)return;
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lineMsgText).then(()=>flashCopyBtn()).catch(()=>fallbackCopy());}
+  else fallbackCopy();
 }
-function fallbackCopy(){
-  const ta = document.createElement('textarea');
-  ta.value = lineMsgText;
-  ta.style.position='fixed'; ta.style.opacity='0';
-  document.body.appendChild(ta);
-  ta.focus(); ta.select();
-  try{ document.execCommand('copy'); flashCopyBtn(); }catch(e){}
-  document.body.removeChild(ta);
-}
-function flashCopyBtn(){
-  const btn = document.getElementById('copy-btn');
-  btn.innerHTML = '<span>✅</span> คัดลอกแล้ว!';
-  btn.style.background = '#05A347';
-  showToast('✅ คัดลอกข้อความแล้ว วางใน LINE ได้เลย');
-  setTimeout(()=>{
-    btn.innerHTML = '<span>📋</span> คัดลอกข้อความ';
-    btn.style.background = '#06C755';
-  }, 2500);
-}
+function fallbackCopy(){const ta=document.createElement('textarea');ta.value=lineMsgText;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');flashCopyBtn();}catch(e){}document.body.removeChild(ta);}
+function flashCopyBtn(){const btn=document.getElementById('copy-btn');btn.innerHTML='<span>✅</span> คัดลอกแล้ว!';btn.style.background='#05A347';showToast('✅ คัดลอกข้อความแล้ว วางใน LINE ได้เลย');setTimeout(()=>{btn.innerHTML='<span>📋</span> คัดลอกข้อความ';btn.style.background='#06C755';},2500);}
 
 /* ═══════════════════════════════════════════════
    PRICES (แยกสาขา)
 ═══════════════════════════════════════════════ */
-let activePriceBranchBooking = 1;
-
 function switchBookingPriceTab(bid){
-  activePriceBranchBooking = bid;
+  activePriceBranchBooking=bid;
   document.querySelectorAll('.bk-price-tab').forEach(b=>b.classList.remove('bk-tab-active'));
-  document.getElementById('bkptab-'+bid).classList.add('bk-tab-active');
+  document.getElementById('bkptab-'+bid)?.classList.add('bk-tab-active');
   renderPrices();
 }
-
 function renderPrices(){
-  const bPrices = PRICES.filter(p=>p.branch_id===activePriceBranchBooking);
-  const cats = [...new Set(bPrices.map(p=>p.cat))];
-  const branchName = BRANCHES.find(b=>b.id===activePriceBranchBooking);
-
-  // Build tab bar once
-  const tabBar = `
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <button class="bk-price-tab${activePriceBranchBooking===1?' bk-tab-active':''}" id="bkptab-1" onclick="switchBookingPriceTab(1)">📍 เซฟวันโก</button>
-      <button class="bk-price-tab${activePriceBranchBooking===2?' bk-tab-active':''}" id="bkptab-2" onclick="switchBookingPriceTab(2)">📍 คลองหก</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr auto auto;gap:0;background:var(--red);border-radius:var(--radius-sm) var(--radius-sm) 0 0;padding:8px 14px;margin-bottom:0">
-      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8);text-transform:uppercase">รายการ</span>
-      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8);text-align:center;width:60px">✋ มือ</span>
-      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8);text-align:center;width:60px">🦶 เท้า</span>
-    </div>`;
-
-  let body = '';
+  const bPrices=PRICES.filter(p=>p.branch_id===activePriceBranchBooking);
+  const cats=[...new Set(bPrices.map(p=>p.cat))];
+  const tabBar=`<div style="display:flex;gap:8px;margin-bottom:16px">
+    <button class="bk-price-tab${activePriceBranchBooking===1?' bk-tab-active':''}" id="bkptab-1" onclick="switchBookingPriceTab(1)">📍 เซฟวันโก</button>
+    <button class="bk-price-tab${activePriceBranchBooking===2?' bk-tab-active':''}" id="bkptab-2" onclick="switchBookingPriceTab(2)">📍 คลองหก</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr auto auto;background:var(--red);border-radius:var(--radius-sm) var(--radius-sm) 0 0;padding:8px 14px">
+    <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8)">รายการ</span>
+    <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8);text-align:center;width:60px">✋ มือ</span>
+    <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8);text-align:center;width:60px">🦶 เท้า</span>
+  </div>`;
+  let body='';
   cats.forEach(cat=>{
-    body += `<div style="background:var(--red-xlight);padding:8px 14px;font-size:12px;font-weight:700;color:var(--red);letter-spacing:.5px;border-bottom:1px solid var(--border)">${cat}</div>`;
+    body+=`<div style="background:var(--red-xlight);padding:8px 14px;font-size:12px;font-weight:700;color:var(--red);border-bottom:1px solid var(--border)">${cat}</div>`;
     bPrices.filter(p=>p.cat===cat).forEach(p=>{
-      if(p.name.startsWith('🔸')){
-        body += `<div style="padding:7px 14px;font-size:11px;color:var(--red-dark);font-style:italic;background:#fff9f8;border-bottom:1px solid var(--border)">${p.name}</div>`;
-      } else {
-        body += `<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);background:var(--white)">
-          <span style="font-size:13px;color:var(--text)">${p.name}</span>
-          <span style="font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;color:var(--red);text-align:center;width:60px">${p.hand||'–'}</span>
-          <span style="font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;color:#8B4513;text-align:center;width:60px">${p.foot||'–'}</span>
-        </div>`;
-      }
+      if(p.name.startsWith('🔸')){body+=`<div style="padding:7px 14px;font-size:11px;color:var(--red-dark);font-style:italic;background:#fff9f8;border-bottom:1px solid var(--border)">${p.name}</div>`;}
+      else body+=`<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);background:var(--white)"><span style="font-size:13px;color:var(--text)">${p.name}</span><span style="font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;color:var(--red);text-align:center;width:60px">${p.hand||'–'}</span><span style="font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;color:#8B4513;text-align:center;width:60px">${p.foot||'–'}</span></div>`;
     });
   });
-
-  document.getElementById('price-list').innerHTML = tabBar +
-    `<div style="border:1.5px solid var(--border);border-radius:0 0 var(--radius) var(--radius);overflow:hidden;margin-bottom:16px">${body}</div>
-     <div style="background:var(--red-xlight);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:var(--red-dark);line-height:1.8">
-       🔸 ราคาอาจเปลี่ยนแปลงได้ตามความยากและวัสดุ<br/>สอบถามเพิ่มเติมได้ที่ LINE OA ของร้านค่ะ
-     </div>`;
+  document.getElementById('price-list').innerHTML=tabBar+`<div style="border:1.5px solid var(--border);border-radius:0 0 var(--radius) var(--radius);overflow:hidden;margin-bottom:16px">${body}</div><div style="background:var(--red-xlight);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:var(--red-dark);line-height:1.8">🔸 ราคาอาจเปลี่ยนแปลงได้ตามความยากและวัสดุ<br/>สอบถามเพิ่มเติมได้ที่ LINE OA ของร้านค่ะ</div>`;
 }
 
-// Inject tab styles into booking page
-(function(){
-  const s=document.createElement('style');
-  s.textContent=`.bk-price-tab{height:38px;padding:0 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:13px;font-weight:500;color:var(--text-mid);cursor:pointer;transition:.2s;font-family:'Noto Sans Thai',sans-serif}
-  .bk-tab-active{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;font-weight:700!important}
-  .bk-price-tab:hover:not(.bk-tab-active){border-color:var(--red);color:var(--red)}`;
-  document.head.appendChild(s);
-})();
-
-renderPrices();
-
 /* ═══════════════════════════════════════════════
-   CONTACT
+   CONTACT / LOCK / POINTS
 ═══════════════════════════════════════════════ */
 function renderContact(){
-  document.getElementById('contact-list').innerHTML=CONTACT.map(c=>`
-    <div class="contact-item">
-      <div class="contact-icon">${c.icon}</div>
-      <div class="contact-info"><p>${c.label}</p><strong>${c.value}</strong></div>
-    </div>`).join('');
+  document.getElementById('contact-list').innerHTML=CONTACT.map(c=>`<div class="contact-item"><div class="contact-icon">${c.icon}</div><div class="contact-info"><p>${c.label}</p><strong>${c.value}</strong></div></div>`).join('');
 }
-renderContact();
-
-/* ═══════════════════════════════════════════════
-   LOCK NUMBERS
-═══════════════════════════════════════════════ */
 function renderLockNumbers(){
   const today=new Date();
   document.getElementById('lock-date-label').textContent=`อัปเดตวันที่ ${today.getDate()} ${TH_MONTHS_SHORT[today.getMonth()]} ${today.getFullYear()+543}`;
-  document.getElementById('lock-cards').innerHTML=LOCK_NUMBERS.map(ln=>`
-    <div style="background:var(--white);border-radius:var(--radius);padding:18px 20px;border:1.5px solid var(--border);box-shadow:var(--shadow)">
-      <div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:14px">📍 ${ln.branch}</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-        ${ln.numbers.map(n=>`<div style="width:56px;height:56px;background:var(--red-xlight);border:2px solid var(--red-light);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;color:var(--red)">${n}</div>`).join('')}
-      </div>
-    </div>`).join('');
+  document.getElementById('lock-cards').innerHTML=LOCK_NUMBERS.map(ln=>`<div style="background:var(--white);border-radius:var(--radius);padding:18px 20px;border:1.5px solid var(--border);box-shadow:var(--shadow)"><div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:14px">📍 ${ln.branch}</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">${ln.numbers.map(n=>`<div style="width:56px;height:56px;background:var(--red-xlight);border:2px solid var(--red-light);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;color:var(--red)">${n}</div>`).join('')}</div></div>`).join('');
 }
-renderLockNumbers();
-
-/* ═══════════════════════════════════════════════
-   POINTS (ดึงจาก Supabase)
-═══════════════════════════════════════════════ */
 async function lookupPoints(){
   const phone=document.getElementById('pts-phone').value.trim();
   if(!/^[0-9]{10}$/.test(phone)){showToast('กรุณากรอกเบอร์โทร 10 หลัก');return;}
-  const btn = document.querySelector('#points-lookup .btn-primary');
-  if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังตรวจสอบ...'; }
-  try {
-    const rows = await sb.select('point_customers', `phone=eq.${phone}&select=total_points,name`);
-    const pts = rows && rows[0] ? rows[0].total_points : 0;
-    document.getElementById('pts-count').textContent = pts;
-    document.getElementById('points-lookup').style.display='none';
-    document.getElementById('points-result').style.display='block';
-  } catch(e){
-    // ถ้าตาราง point_customers ยังไม่มี แสดง 0 แต้ม
-    document.getElementById('pts-count').textContent = '0';
-    document.getElementById('points-lookup').style.display='none';
-    document.getElementById('points-result').style.display='block';
-  } finally {
-    if(btn){ btn.disabled=false; btn.textContent='ตรวจสอบแต้ม'; }
-  }
+  try{const rows=await sb.select('point_customers',`phone=eq.${phone}&select=total_points`);document.getElementById('pts-count').textContent=(rows&&rows[0])?rows[0].total_points:0;}
+  catch(e){document.getElementById('pts-count').textContent=0;}
+  document.getElementById('points-lookup').style.display='none';document.getElementById('points-result').style.display='block';
+}
+
+/* ═══════════════════════════════════════════════
+   QR CANVAS
+═══════════════════════════════════════════════ */
+function drawQR(canvasId){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');canvas.width=200;canvas.height=200;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,200,200);
+  const s=8,pad=16;
+  function finder(x,y){ctx.fillStyle='#1a1a1a';ctx.fillRect(x,y,s*7,s*7);ctx.fillStyle='#fff';ctx.fillRect(x+s,y+s,s*5,s*5);ctx.fillStyle='#1a1a1a';ctx.fillRect(x+s*2,y+s*2,s*3,s*3);}
+  finder(pad,pad);finder(200-pad-s*7,pad);finder(pad,200-pad-s*7);
+  ctx.fillStyle='#1a1a1a';
+  for(let r=0;r<21;r++){for(let c=0;c<21;c++){const px=pad+c*s,py=pad+r*s;if(r<8&&(c<8||c>12)||r>12&&c<8)continue;if(Math.random()>0.5)ctx.fillRect(px,py,s-1,s-1);}}
+  ctx.fillStyle='#C0392B';ctx.font='bold 12px Prompt,Arial';ctx.textAlign='center';ctx.fillText('PromptPay',100,190);ctx.fillStyle='#555';ctx.font='10px Arial';ctx.fillText('103STUDIO',100,180);
 }
 
 /* ═══════════════════════════════════════════════
    TOAST
 ═══════════════════════════════════════════════ */
 let toastTimeout;
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimeout);
-  toastTimeout=setTimeout(()=>t.classList.remove('show'),2400);
-}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('show'),2800);}
 
-// ── INIT ────────────────────────────────────────
-loadProfile();
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+function loadProfile(){renderHomeProfile();initLiff();}
+renderContact();renderLockNumbers();renderPrices();loadProfile();
 </script>
 </body>
 </html>
